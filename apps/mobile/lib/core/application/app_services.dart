@@ -92,12 +92,7 @@ class AppServices {
             'Account restoration needs attention. Reconnect from Settings.',
       });
     }
-    // Clear a stale UI flag after termination; the lease still protects live workers.
-    if (!(date((await db.getOne('lease', 'sync'))?['expires'])
-            ?.isAfter(DateTime.now()) ??
-        false)) {
-      await db.health({'syncing': false});
-    }
+    await sync.recoverInterruptedSync();
   }
 
   Future<void> dispose() async {
@@ -108,7 +103,7 @@ class AppServices {
 
   Future<void> connect({String? accountId}) async {
     await auth.connect(accountId: accountId);
-    await sync.run();
+    await sync.runAfterCurrent();
   }
 
   Future<void> finishOnboarding() async {
@@ -137,7 +132,7 @@ class AppServices {
     });
     await alarms.cancelSources({source.id});
     await alarms.reconcile();
-    if (mode != SourceMode.off) await sync.run();
+    if (mode != SourceMode.off) await sync.runAfterCurrent();
   }
 
   Future<void> setCalendarOffsets(
@@ -219,7 +214,7 @@ class AppServices {
     );
     await alarms.cancelSources({list.id});
     await alarms.reconcile();
-    if (selected) await sync.run();
+    if (selected) await sync.runAfterCurrent();
   }
 
   Future<void> setTaskAlarm(TaskItem item, DateTime? at) async {
@@ -247,7 +242,7 @@ class AppServices {
       owner: item.listId,
     );
     await alarms.reconcile();
-    await sync.run();
+    await sync.runAfterCurrent();
   }
 
   Future<void> removeAccount(String id) async {

@@ -154,6 +154,7 @@ void main() {
       gateway,
       alarms,
       clock: () => DateTime.utc(2026, 9, 5),
+      processId: 123,
     );
     await db.put('account', account.id, account.toJson());
   });
@@ -169,6 +170,64 @@ void main() {
     await db.put('source', s.id, s.toJson(), owner: account.id);
     await db.replace('entry', s.id, entries.map((e) => e.toJson()));
   }
+
+  test(
+    'restart reclaims an unexpired lease from the terminated process',
+    () async {
+      await seed(source('calendar'));
+      gateway.eventData['calendar'] = [event('calendar', 'fresh')];
+      await db.put('lease', 'sync', {
+        'id': 'old-worker',
+        'processId': 122,
+        'expires': DateTime.utc(2026, 9, 5, 0, 10).toIso8601String(),
+      });
+      await db.health({'syncing': true});
+      await sync.recoverInterruptedSync();
+      expect((await db.snapshot()).syncing, false);
+      await sync.run();
+      expect((await db.snapshot()).entries.single.id, 'fresh');
+      expect(await db.getOne('lease', 'sync'), isNull);
+    },
+  );
+
+  test(
+    'live worker in another engine keeps its lease and sync state',
+    () async {
+      await db.put('lease', 'sync', {
+        'id': 'live-worker',
+        'processId': 123,
+        'expires': DateTime.utc(2026, 9, 5, 0, 10).toIso8601String(),
+      });
+      await db.health({'syncing': true});
+      await sync.recoverInterruptedSync();
+      await sync.run();
+      expect((await db.snapshot()).syncing, true);
+      expect((await db.getOne('lease', 'sync'))?['id'], 'live-worker');
+      expect(alarms.reconciliations, 0);
+    },
+  );
+
+  test(
+    'fresh pass after selection changes does not only join the old pass',
+    () async {
+      final started = Completer<void>();
+      final release = Completer<void>();
+      var discoveries = 0;
+      gateway.beforeDiscover = () async {
+        discoveries++;
+        if (discoveries == 1) {
+          started.complete();
+          await release.future;
+        }
+      };
+      final first = sync.run();
+      await started.future;
+      final next = sync.runAfterCurrent();
+      release.complete();
+      await Future.wait([first, next]);
+      expect(discoveries, 2);
+    },
+  );
 
   test('new shared and hidden sources start off; rediscovery preserves preferences', () async {
     final shared = CalendarSource(

@@ -222,59 +222,99 @@ class GoogleGateway
   ) async {
     final blocks = <String, List<BusyBlock>>{};
     final failures = <String, SyncFailure>{};
+    // FreeBusy rejects long ranges that events.list accepts. Fetch bounded
+    // windows, but publish a source only when its entire snapshot succeeded.
     for (var i = 0; i < sources.length; i += 50) {
       final batch = sources.skip(i).take(50).toList();
-      try {
-        final response = await _call(
-          account,
-          (client) => cal.CalendarApi(client).freebusy.query(
-            cal.FreeBusyRequest(
-              timeMin: from.toUtc(),
-              timeMax: to.toUtc(),
-              timeZone: 'UTC',
-              calendarExpansionMax: 50,
-              items: batch
-                  .map((s) => cal.FreeBusyRequestItem(id: s.calendarId))
-                  .toList(),
+      final periods = <String, List<cal.TimePeriod>>{
+        for (final source in batch) source.id: [],
+      };
+      for (var cursor = from.toUtc(); cursor.isBefore(to);) {
+        final next = cursor.add(const Duration(days: 30));
+        final windowEnd = next.isBefore(to) ? next : to.toUtc();
+        try {
+          final response = await _call(
+            account,
+            (client) => cal.CalendarApi(client).freebusy.query(
+              cal.FreeBusyRequest(
+                timeMin: cursor,
+                timeMax: windowEnd,
+                timeZone: 'UTC',
+                calendarExpansionMax: 50,
+                items: batch
+                    .map((s) => cal.FreeBusyRequestItem(id: s.calendarId))
+                    .toList(),
+              ),
             ),
-          ),
-        );
-        for (final source in batch) {
-          final calendar = response.calendars?[source.calendarId];
-          if (calendar == null || (calendar.errors?.isNotEmpty ?? false)) {
-            final lost =
-                calendar?.errors?.any(
-                  (e) => e.reason == 'notFound' || e.reason == 'forbidden',
-                ) ??
-                false;
-            failures[source.id] = SyncFailure(
-              lost
-                  ? 'Access to this availability calendar is no longer available.'
-                  : 'Google could not refresh this availability calendar.',
-              accessLost: lost,
-            );
-            continue;
+          );
+          for (final source in batch) {
+            final calendar = response.calendars?[source.calendarId];
+            if (calendar == null || (calendar.errors?.isNotEmpty ?? false)) {
+              final lost =
+                  calendar?.errors?.any(
+                    (e) => e.reason == 'notFound' || e.reason == 'forbidden',
+                  ) ??
+                  false;
+              if (lost || !failures.containsKey(source.id)) {
+                failures[source.id] = SyncFailure(
+                  lost
+                      ? 'Access to this availability calendar is no longer available.'
+                      : 'Google could not refresh this availability calendar.',
+                  accessLost: lost,
+                );
+              }
+            } else {
+              periods[source.id]!.addAll(calendar.busy ?? <cal.TimePeriod>[]);
+            }
           }
-          blocks[source.id] = [
-            for (final period in calendar.busy ?? <cal.TimePeriod>[])
-              if (period.start != null && period.end != null)
-                BusyBlock(
-                  id: stableId([
-                    source.id,
-                    period.start!.toUtc().toIso8601String(),
-                  ]),
-                  sourceId: source.id,
-                  start: period.start!.toUtc(),
-                  end: period.end!.toUtc(),
-                  calendarId: source.calendarId,
-                  calendarName: source.name,
-                ),
-          ];
+        } on SyncFailure catch (failure) {
+          for (final source in batch) {
+            failures.putIfAbsent(source.id, () => failure);
+          }
+          break;
         }
-      } on SyncFailure catch (failure) {
-        for (final source in batch) {
-          failures[source.id] = failure;
+        cursor = windowEnd;
+      }
+      for (final source in batch) {
+        if (failures.containsKey(source.id)) continue;
+        final sorted =
+            periods[source.id]!
+                .where(
+                  (p) =>
+                      p.start != null &&
+                      p.end != null &&
+                      p.start!.isBefore(p.end!),
+                )
+                .toList()
+              ..sort((a, b) => a.start!.compareTo(b.start!));
+        final merged = <cal.TimePeriod>[];
+        for (final period in sorted) {
+          // A busy block crossing a query boundary is still one block. Keep
+          // one start identity and avoid an artificial alarm at the boundary.
+          if (merged.isNotEmpty && !period.start!.isAfter(merged.last.end!)) {
+            if (period.end!.isAfter(merged.last.end!)) {
+              merged.last.end = period.end;
+            }
+          } else {
+            merged.add(
+              cal.TimePeriod(
+                start: period.start!.toUtc(),
+                end: period.end!.toUtc(),
+              ),
+            );
+          }
         }
+        blocks[source.id] = [
+          for (final period in merged)
+            BusyBlock(
+              id: stableId([source.id, period.start!.toIso8601String()]),
+              sourceId: source.id,
+              start: period.start!,
+              end: period.end!,
+              calendarId: source.calendarId,
+              calendarName: source.name,
+            ),
+        ];
       }
     }
     return AvailabilityResult(blocks, failures: failures);

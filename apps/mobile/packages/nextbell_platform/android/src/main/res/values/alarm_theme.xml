@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keep aligned with the Flutter AppColors and dark theme in app_theme.dart. -->
+    <color name="nextbell_indigo">#6658D9</color>
+    <color name="nextbell_alarm_surface">#171621</color>
+    <color name="nextbell_alarm_card">#22212F</color>
+    <color name="nextbell_alarm_ink">#F8F7FF</color>
+    <color name="nextbell_alarm_muted">#BCB8CD</color>
+    <color name="nextbell_alarm_outline">#7D7596</color>
+    <color name="nextbell_alarm_mint">#D9F3E8</color>
+    <style name="NextbellAlarmTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/nextbell_alarm_surface</item>
+        <item name="android:colorAccent">@color/nextbell_indigo</item>
+        <item name="android:statusBarColor">@color/nextbell_alarm_surface</item>
+        <item name="android:navigationBarColor">@color/nextbell_alarm_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

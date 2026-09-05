@@ -51,26 +51,29 @@ CustomTransitionPage<void> motionPage(
 );
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final rootNavigator = GlobalKey<NavigatorState>();
   final refresh = ValueNotifier(0);
   ref.listen(snapshotProvider, (_, _) => refresh.value++);
   final router = GoRouter(
+    navigatorKey: rootNavigator,
     initialLocation: '/today',
     refreshListenable: refresh,
     redirect: (context, route) {
       final state = ref.read(snapshotProvider).value;
       if (state == null) return null;
-      if (!state.settings.onboarded &&
+      if (state.accounts.isEmpty &&
+          !state.settings.onboarded &&
           !state.demo &&
-          const [
-            '/today',
-            '/tasks',
-            '/settings',
-          ].contains(route.matchedLocation)) {
+          !const ['/welcome', '/about'].contains(route.matchedLocation)) {
         return '/welcome';
       }
-      if ((state.settings.onboarded || state.demo) &&
+      if ((state.accounts.isNotEmpty ||
+              state.settings.onboarded ||
+              state.demo) &&
           route.matchedLocation == '/welcome') {
-        return '/today';
+        return !state.settings.onboarded && !state.demo
+            ? '/today/calendars'
+            : '/today';
       }
       return null;
     },
@@ -88,6 +91,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/today',
             pageBuilder: (context, state) =>
                 motionPage(context, state, const TodayScreen()),
+            routes: [
+              // The agenda stays beneath first-time calendar setup. Neither
+              // system Back nor the toolbar can uncover the sign-in screen.
+              GoRoute(
+                path: 'calendars',
+                parentNavigatorKey: rootNavigator,
+                pageBuilder: (context, state) =>
+                    motionPage(context, state, const CalendarsScreen()),
+              ),
+            ],
           ),
           GoRoute(
             path: '/tasks',
@@ -101,11 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(
-        path: '/calendars',
-        pageBuilder: (context, state) =>
-            motionPage(context, state, const CalendarsScreen()),
-      ),
+      GoRoute(path: '/calendars', redirect: (_, _) => '/today/calendars'),
       GoRoute(
         path: '/alarm-settings',
         pageBuilder: (context, state) =>

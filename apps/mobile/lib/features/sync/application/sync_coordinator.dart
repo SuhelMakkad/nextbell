@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import '../../../core/models.dart';
 import '../../../core/data/app_database.dart';
@@ -14,7 +15,9 @@ class SyncCoordinator {
     this.tasks,
     this.alarms, {
     DateTime Function()? clock,
-  }) : clock = clock ?? DateTime.now;
+    int? processId,
+  }) : clock = clock ?? DateTime.now,
+       processId = processId ?? pid;
   final AppDatabase db;
   final AccountRepository auth;
   final CalendarSourceRepository sources;
@@ -22,10 +25,31 @@ class SyncCoordinator {
   final TaskRepository tasks;
   final AlarmScheduler alarms;
   final DateTime Function() clock;
+  final int processId;
   Future<void>? _running;
   Future<void> run() => _running ??= _run().whenComplete(() => _running = null);
   Future<void> waitForIdle() async {
     await _running;
+  }
+
+  // A persisted lease belongs to a live worker only within this app process.
+  // Foreground and background Flutter engines share its PID. A new process can
+  // immediately recover work interrupted by termination or an app update.
+  bool _leaseIsLive(Map<String, dynamic>? lease) =>
+      lease?['processId'] == processId &&
+      (date(lease?['expires'])?.isAfter(clock()) ?? false);
+
+  Future<void> recoverInterruptedSync() => db.transaction(() async {
+    if (!_leaseIsLive(await db.getOne('lease', 'sync'))) {
+      await db.remove('lease', 'sync');
+      await db.health({'syncing': false});
+    }
+  });
+
+  // Settings may change after an existing pass has read its source selection.
+  Future<void> runAfterCurrent() async {
+    await _running;
+    await run();
   }
 
   Future<bool> _present(String id) async =>
@@ -38,13 +62,12 @@ class SyncCoordinator {
   Future<void> _run() async {
     final leaseId = stableId(['sync', clock().microsecondsSinceEpoch]);
     final acquired = await db.transaction(() async {
-      if (date((await db.getOne('lease', 'sync'))?['expires'])
-              ?.isAfter(clock()) ??
-          false) {
+      if (_leaseIsLive(await db.getOne('lease', 'sync'))) {
         return false;
       }
       await db.put('lease', 'sync', {
         'id': leaseId,
+        'processId': processId,
         'expires': clock().add(const Duration(minutes: 10)).toIso8601String(),
       });
       return true;
@@ -58,6 +81,7 @@ class SyncCoordinator {
               if ((await db.getOne('lease', 'sync'))?['id'] == leaseId) {
                 await db.put('lease', 'sync', {
                   'id': leaseId,
+                  'processId': processId,
                   'expires': clock()
                       .add(const Duration(minutes: 10))
                       .toIso8601String(),

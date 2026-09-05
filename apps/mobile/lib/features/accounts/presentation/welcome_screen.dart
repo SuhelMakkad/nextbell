@@ -61,7 +61,10 @@ class WelcomeScreen extends ConsumerWidget {
                     onPressed: () async {
                       await ref.read(servicesProvider).ready;
                       await ref.read(servicesProvider).connect();
-                      if (context.mounted) await context.push('/calendars');
+                      // Authentication updates the router as soon as the
+                      // account is persisted. Never await a pushed page here:
+                      // that would keep the sign-in button busy until Back.
+                      if (context.mounted) context.go('/calendars');
                     },
                   ),
                 ),

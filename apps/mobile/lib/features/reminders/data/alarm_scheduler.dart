@@ -204,22 +204,49 @@ class NativeAlarmScheduler implements AlarmScheduler {
     }
   });
   @override
-  Future<void> testAlarm() async {
+  Future<void> testAlarm() => _serial(() async {
     final now = clock().toUtc();
-    await host.scheduleAlarm(
-      NativeAlarm(
-        id: stableId(['test', now.toIso8601String()]),
-        entryId: 'test',
-        title: 'Hello from Nextbell',
-        subtitle: 'A little heads-up for what’s next.',
-        fireAtMillis: now
-            .add(const Duration(seconds: 10))
-            .millisecondsSinceEpoch,
-        snoozeMinutes: 5,
-        sourceIds: [],
-      ),
+    final alarm = NativeAlarm(
+      id: stableId(['test', now.toIso8601String()]),
+      entryId: 'test',
+      title: 'Hello from Nextbell',
+      subtitle: 'A little heads-up for what’s next.',
+      fireAtMillis: now.add(const Duration(seconds: 10)).millisecondsSinceEpoch,
+      snoozeMinutes: 5,
+      sourceIds: [],
     );
-  }
+    try {
+      await host.scheduleAlarm(alarm);
+    } on PlatformException catch (e) {
+      if (e.code != 'capacity') rethrow;
+      final later =
+          (await host.alarms())
+              .where((a) => !a.ringing && a.fireAtMillis > alarm.fireAtMillis)
+              .toList()
+            ..sort((a, b) => b.fireAtMillis.compareTo(a.fireAtMillis));
+      if (later.isEmpty) rethrow;
+      final deferred = later.first;
+      await host.cancelAlarms([deferred.id]);
+      try {
+        await host.scheduleAlarm(alarm);
+      } catch (_) {
+        try {
+          await host.scheduleAlarm(deferred);
+        } catch (_) {
+          await db.remove('alarm', deferred.id);
+          await db.health({
+            'alarmError': 'Some alarms could not be restored. Check and repair schedules.',
+          });
+        }
+        rethrow;
+      }
+      await db.remove('alarm', deferred.id);
+      await db.health({
+        'alarmError': 'The earliest reminders are scheduled. Open Nextbell to extend coverage as alarms fire.',
+      });
+    }
+    await db.put('alarm', alarm.id, _spec(alarm).toJson(), owner: 'device');
+  });
 
   NativeAlarm _native(AlarmSpec a) => NativeAlarm(
     id: a.id,

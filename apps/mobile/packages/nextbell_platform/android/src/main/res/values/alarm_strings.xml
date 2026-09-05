@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nextbell_alarm_heading">A LITTLE AHEAD</string>
+    <string name="nextbell_alarm_snooze">Snooze for %1$d min</string>
+    <string name="nextbell_alarm_dismiss">Dismiss</string>
+    <string name="nextbell_alarm_dismiss_hint">Dismiss stops this reminder.</string>
+    <string name="nextbell_alarm_access_error">Check alarm access in Settings</string>
+</resources>

@@ -151,12 +151,103 @@ void main() {
       final result = await gateway.busy(
         account,
         List.generate(51, (i) => source('s$i', role: 'freeBusyReader')),
-        DateTime.utc(2026),
-        DateTime.utc(2027),
+        DateTime.utc(2026, 9, 6),
+        DateTime.utc(2026, 9, 7),
       );
       expect(lengths, [50, 1]);
       expect(result.blocks.length, 50);
       expect(result.failures['s0']!.accessLost, true);
+    },
+  );
+  test(
+    '97-day availability is contiguous and merges blocks across windows',
+    () async {
+      final from = DateTime.utc(2026, 9, 1);
+      final to = from.add(const Duration(days: 97));
+      final busyStart = from.add(const Duration(days: 29, hours: 23));
+      final busyEnd = from.add(const Duration(days: 30, hours: 1));
+      final windows = <(DateTime, DateTime)>[];
+      final gateway = GoogleGateway(
+        FakeAuth(),
+        clientFactory: (_) => MockClient((request) async {
+          final body = jsonDecode(request.body) as Map;
+          final start = DateTime.parse(body['timeMin'] as String);
+          final end = DateTime.parse(body['timeMax'] as String);
+          windows.add((start, end));
+          expect(
+            end.difference(start),
+            lessThanOrEqualTo(const Duration(days: 30)),
+          );
+          return jsonResponse({
+            'calendars': {
+              'shared@example.com': {
+                'busy': [
+                  if (start.isBefore(busyEnd) && end.isAfter(busyStart))
+                    {
+                      'start': (start.isAfter(busyStart) ? start : busyStart)
+                          .toIso8601String(),
+                      'end': (end.isBefore(busyEnd) ? end : busyEnd)
+                          .toIso8601String(),
+                    },
+                ],
+              },
+            },
+          });
+        }),
+      );
+      final result = await gateway.busy(
+        account,
+        [source('shared', role: 'freeBusyReader')],
+        from,
+        to,
+      );
+      expect(windows.length, 4);
+      expect(windows.first.$1, from);
+      expect(windows.last.$2, to);
+      for (var i = 1; i < windows.length; i++) {
+        expect(windows[i - 1].$2, windows[i].$1);
+      }
+      expect(result.failures, isEmpty);
+      expect(result.blocks['shared'], hasLength(1));
+      expect(result.blocks['shared']!.single.start, busyStart);
+      expect(result.blocks['shared']!.single.end, busyEnd);
+    },
+  );
+  test(
+    'one failed availability window never commits a partial source',
+    () async {
+      var calls = 0;
+      final gateway = GoogleGateway(
+        FakeAuth(),
+        clientFactory: (_) => MockClient((request) async {
+          calls++;
+          return jsonResponse({
+            'calendars': {
+              'good@example.com': {'busy': []},
+              'partial@example.com': calls == 2
+                  ? {
+                      'errors': [
+                        {'reason': 'internalError'},
+                      ],
+                    }
+                  : {'busy': []},
+            },
+          });
+        }),
+      );
+      final result = await gateway.busy(
+        account,
+        [
+          source('good', role: 'freeBusyReader'),
+          source('partial', role: 'freeBusyReader'),
+        ],
+        DateTime.utc(2026, 9, 1),
+        DateTime.utc(2026, 12, 7),
+      );
+      expect(calls, 4);
+      expect(result.blocks.containsKey('good'), true);
+      expect(result.blocks.containsKey('partial'), false);
+      expect(result.failures.containsKey('partial'), true);
     },
   );
   test('task completion sends only the permitted status patch', () async {

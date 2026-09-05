@@ -17,6 +17,7 @@ class FakeHost extends NextbellHostApi {
   int? capacity;
   bool allowed = true;
   bool failCancellation = false;
+  bool failTest = false;
   @override
   Future<List<NativeAccount>> accounts() async => accountsResult;
   @override
@@ -45,6 +46,9 @@ class FakeHost extends NextbellHostApi {
       throw PlatformException(code: 'capacity');
     }
     calls++;
+    if (failTest && alarm.entryId == 'test') {
+      throw PlatformException(code: 'native_failure');
+    }
     scheduled[alarm.id] = alarm;
   }
 }
@@ -72,6 +76,45 @@ void main() {
     expect(host.scheduled.length, 2);
     expect(host.calls, 2);
     expect((await db.snapshot()).alarms.length, 2);
+  });
+  test(
+    'test alarm gets the earliest slot when device capacity is full',
+    () async {
+      host.capacity = 2;
+      await scheduler.reconcile();
+      await scheduler.testAlarm();
+      expect(host.scheduled.length, 2);
+      expect(
+        host.scheduled.values.where((a) => a.entryId == 'test'),
+        hasLength(1),
+      );
+      expect(
+        host.scheduled.values.any(
+          (a) =>
+              a.fireAtMillis ==
+              DateTime.utc(2026, 9, 6, 14, 50).millisecondsSinceEpoch,
+        ),
+        true,
+      );
+      expect(
+        (await db.snapshot()).alarms.map((a) => a.id).toSet(),
+        host.scheduled.keys.toSet(),
+      );
+      await scheduler.reconcile();
+      expect(
+        host.scheduled.values.where((a) => a.entryId == 'test'),
+        hasLength(1),
+      );
+    },
+  );
+  test('failed test scheduling restores a displaced future reminder', () async {
+    host.capacity = 2;
+    await scheduler.reconcile();
+    final before = host.scheduled.keys.toSet();
+    host.failTest = true;
+    await expectLater(scheduler.testAlarm(), throwsA(isA<PlatformException>()));
+    expect(host.scheduled.keys.toSet(), before);
+    expect((await db.snapshot()).alarms.map((a) => a.id).toSet(), before);
   });
   test('dismissal is durable, acknowledged after commit, and preserves next reminder', () async {
     await scheduler.reconcile();
