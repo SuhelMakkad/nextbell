@@ -453,6 +453,9 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NextbellHostApi {
+  func identityToken(serverClientId: String) async throws -> String
+  func authorizeCloud(serverClientId: String, email: String, includeTasks: Bool) async throws -> String
+  func configureCloudDevice(alarmsEnabled: Bool, urgentNotices: Bool) async throws
   func connect(clientId: String, accountId: String?) async throws -> NativeAccount
   func accounts() async throws -> [NativeAccount]
   func accessToken(accountId: String) async throws -> String
@@ -473,6 +476,60 @@ class NextbellHostApiSetup {
   /// Sets up an instance of `NextbellHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: NextbellHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let identityTokenChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.identityToken\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      identityTokenChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let serverClientIdArg = args[0] as! String
+        Task { @MainActor in
+          do {
+            let result = try await api.identityToken(serverClientId: serverClientIdArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      identityTokenChannel.setMessageHandler(nil)
+    }
+    let authorizeCloudChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.authorizeCloud\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      authorizeCloudChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let serverClientIdArg = args[0] as! String
+        let emailArg = args[1] as! String
+        let includeTasksArg = args[2] as! Bool
+        Task { @MainActor in
+          do {
+            let result = try await api.authorizeCloud(serverClientId: serverClientIdArg, email: emailArg, includeTasks: includeTasksArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      authorizeCloudChannel.setMessageHandler(nil)
+    }
+    let configureCloudDeviceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.configureCloudDevice\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      configureCloudDeviceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let alarmsEnabledArg = args[0] as! Bool
+        let urgentNoticesArg = args[1] as! Bool
+        Task { @MainActor in
+          do {
+            try await api.configureCloudDevice(alarmsEnabled: alarmsEnabledArg, urgentNotices: urgentNoticesArg)
+            reply(wrapResult(nil))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      configureCloudDeviceChannel.setMessageHandler(nil)
+    }
     let connectChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.connect\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       connectChannel.setMessageHandler { message, reply in

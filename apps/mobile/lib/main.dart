@@ -18,9 +18,16 @@ import 'features/calendar_sources/presentation/calendars_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/tasks/presentation/tasks_screen.dart';
 import 'features/sync/application/background_sync.dart';
+import 'features/cloud/application/cloud_messages.dart';
+import 'features/cloud/presentation/devices_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await initializeCloudMessages();
+  } catch (_) {
+    // Sign-in and Settings report unavailable configuration without preventing launch.
+  }
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
       'Manrope',
@@ -61,15 +68,28 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, route) {
       final state = ref.read(snapshotProvider).value;
       if (state == null) return null;
-      if (state.accounts.isEmpty &&
+      if (state.cloudRequired &&
+          !state.cloudSignedIn &&
+          !state.demo &&
+          !const ['/welcome', '/about'].contains(route.matchedLocation)) {
+        return '/welcome';
+      }
+      if (state.cloudRequired &&
+          state.cloudSignedIn &&
+          route.matchedLocation == '/welcome') {
+        return state.settings.onboarded ? '/today' : '/today/calendars';
+      }
+      if (!state.cloudRequired &&
+          state.accounts.isEmpty &&
           !state.settings.onboarded &&
           !state.demo &&
           !const ['/welcome', '/about'].contains(route.matchedLocation)) {
         return '/welcome';
       }
-      if ((state.accounts.isNotEmpty ||
-              state.settings.onboarded ||
-              state.demo) &&
+      if ((!state.cloudRequired &&
+              (state.accounts.isNotEmpty ||
+                  state.settings.onboarded ||
+                  state.demo)) &&
           route.matchedLocation == '/welcome') {
         return !state.settings.onboarded && !state.demo
             ? '/today/calendars'
@@ -115,6 +135,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/calendars', redirect: (_, _) => '/today/calendars'),
+      GoRoute(
+        path: '/devices',
+        pageBuilder: (context, state) =>
+            motionPage(context, state, const DevicesScreen()),
+      ),
       GoRoute(
         path: '/alarm-settings',
         pageBuilder: (context, state) =>
@@ -175,7 +200,8 @@ class _NextbellAppState extends ConsumerState<NextbellApp>
     await service.ready;
     if (service.demo || !mounted) return;
     try {
-      if ((await service.db.snapshot()).accounts.isNotEmpty) {
+      final current = await service.db.snapshot();
+      if (current.accounts.isNotEmpty || current.cloudSignedIn) {
         try {
           await registerBackgroundSync();
           await service.db.health({'backgroundError': null});

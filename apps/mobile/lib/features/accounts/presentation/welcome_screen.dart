@@ -77,8 +77,28 @@ class WelcomeScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 18),
+                if (ref.watch(snapshotProvider).value?.cloudRequired == true &&
+                    ref.watch(snapshotProvider).value?.accounts.isNotEmpty ==
+                        true)
+                  TextButton(
+                    onPressed: () async {
+                      if (await confirm(
+                            context,
+                            'Start the cloud beta?',
+                            'This resets development data and cancels this phone’s existing alarms. You can then sign in and choose your calendars again.',
+                            action: 'Reset this phone',
+                          ) &&
+                          context.mounted) {
+                        await perform(
+                          context,
+                          ref.read(servicesProvider).resetForCloud,
+                        );
+                      }
+                    },
+                    child: const Text('Reset this phone for the cloud beta'),
+                  ),
                 Text(
-                  'Only the calendars you choose. No ads. Your reminder settings stay on your phone.',
+                  'Only the calendars you choose. No ads. Nextbell securely syncs your selected Google data and reminder settings; your phone rings even offline.',
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.center,
                 ),

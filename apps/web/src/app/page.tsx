@@ -304,9 +304,10 @@ export default function Home() {
           <p className="eyebrow">Personal by design</p>
           <h2>Your plans stay personal.</h2>
           <p>
-            Your calendars, tasks, and settings stay on your device. No ads. No
-            analytics. No Nextbell server collecting your plans. And already
-            scheduled alarms can ring offline.
+            The Android beta keeps selected plans and reminder settings in sync
+            across your phones through Nextbell cloud. No ads. No analytics.
+            Downloaded alarms can ring offline, and you control connected
+            accounts and account deletion.
           </p>
           <Link href="/privacy" className="text-link">
             A little more about privacy

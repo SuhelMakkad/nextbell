@@ -2,11 +2,13 @@
 
 ## Repository boundaries
 
-The pnpm workspace contains `apps/mobile` (Flutter/Dart and its local native plugin) and `apps/web` (Next.js publishing site). Git, CI, toolchain pins and documentation live at the repository root. Flutter owns Dart and Gradle dependencies; pnpm owns JavaScript dependencies in one root lockfile. Root scripts delegate directly without another task orchestrator.
+The pnpm workspace contains `apps/mobile` (Flutter/Dart and its local native plugin), `apps/web` (Next.js public pages and API routes), and `packages/cloud` (server domain, contracts, Google clients and Firestore persistence). Git, CI, toolchain pins and documentation live at the repository root. Flutter owns Dart and Gradle dependencies; pnpm owns JavaScript dependencies in one root lockfile. Root scripts delegate directly without another task orchestrator.
 
-The website uses server components for public publishing content, typed content modules and shared document/navigation layouts. Only the interactive reminder example needs client state. Native credentials and device data are never imported into the web app. Future dashboard routes can use the same Next.js framework, but require a separately designed authentication/data layer and revised privacy disclosures.
+The website uses server components for public publishing content, typed content modules and shared document/navigation layouts. Only the interactive reminder example needs client state. Server-only API routes import `packages/cloud`; public pages never import credentials or user data. The Android cloud beta uses Firebase identity, encrypted server Google grants and device caches. See [CLOUD_BETA.md](CLOUD_BETA.md) for data flow, deployment and deletion/rollback. Future dashboard routes can use the same versioned domain layer with a separately implemented browser session.
 
 ## Boundaries
+
+Android composes `CloudAccountRepository`, `CloudSync` and `CloudApi` through the `SyncEngine` interface. The original `SyncCoordinator` below remains for the iOS prototype and demo. Cloud preferences, device state, pending operations, revision cursors and downloaded records occupy separate record kinds; no SQLite schema reset is required. Existing development data is cleared only by an explicit beta reset choice.
 
 `lib/core/models.dart` defines immutable value objects and JSON persistence contracts. `features/reminders/domain/reminder_planner.dart` is pure Dart: UTC arithmetic, precedence, suppression, stable identities and shared-event deduplication. It has no network, platform, database or widget calls.
 
@@ -40,8 +42,8 @@ Android uses `setAlarmClock`, exact-alarm special access, a foreground alarm aud
 
 iOS 26 uses AlarmKit fixed dates with custom native stop/snooze intents. AlarmKit authorization is independent of regular notifications. Native presentation, Focus behavior and limits must be verified on signed physical devices. No Flutter animation delays audio or native controls.
 
-Refresh occurs on launch/resume, manually, every five minutes while active and via requested 15-minute background work. The OS may defer/suppress background execution. There is no webhook/backend, so a remote cancellation or moved meeting cannot reach an offline/suspended device until the next successful refresh. Already downloaded native alarms work without a network. The 90-day/capacity coverage is visible; opening the app extends it.
+Refresh occurs on launch/resume, manually, every five minutes while active and via requested 15-minute background work. The OS may defer/suppress background execution. The Android beta also uses server watches, durable tasks and push hints, with periodic fallback. Remote changes still require a successful phone download and native reconciliation; an offline or force-stopped device cannot apply them. Already downloaded native alarms work without a network. The 90-day/capacity coverage is visible; opening the app extends it.
 
 ## Extensions
 
-Add a provider by implementing repositories and preserving provenance. Add reminder rule types in the pure planner before introducing presentation controls. Add platform operations to the Pigeon schema and regenerate all targets together. Keep event editing, direct ICS imports, standalone reminders, analytics, subscriptions and cross-device settings out of v1.
+Add a provider by implementing repositories and preserving provenance. Add reminder rule types in the pure planner before introducing presentation controls. Add platform operations to the Pigeon schema and regenerate all targets together. Keep event editing, direct ICS imports, standalone reminders, analytics and subscriptions out of v1. Cross-device settings are provided by the Android cloud beta; local Snooze/Dismiss state stays device-specific.

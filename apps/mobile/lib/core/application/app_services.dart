@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/native.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nextbell_platform/nextbell_platform.dart';
 
@@ -11,6 +12,9 @@ import '../../features/reminders/data/alarm_scheduler.dart';
 import '../../features/reminders/domain/reminder_planner.dart';
 import '../../features/sync/data/google_gateway.dart';
 import '../../features/sync/application/sync_coordinator.dart';
+import '../../features/sync/application/sync_engine.dart';
+import '../../features/cloud/data/cloud_api.dart';
+import '../../features/cloud/application/cloud_sync.dart';
 import '../demo/demo_data.dart';
 
 class DemoMode extends Notifier<bool> {
@@ -40,50 +44,62 @@ class AppServices {
     this.reminders,
     this.host,
     this.demo,
+    this.cloud,
   ) {
     ready = _initialize();
   }
   factory AppServices.create({bool demo = false}) {
     final db = demo ? AppDatabase(NativeDatabase.memory()) : AppDatabase.open();
     final host = NextbellHostApi();
+    final cloudApi = !demo && CloudConfig.enabled ? CloudApi(db) : null;
     final AccountRepository auth = demo
         ? DemoAccountRepository()
+        : cloudApi != null
+        ? CloudAccountRepository(db, host, cloudApi)
         : NativeAccountRepository(db, host);
     final AlarmScheduler alarms = demo
         ? DemoAlarmScheduler(db)
         : NativeAlarmScheduler(db, host);
     final gateway = demo ? DemoGateway() : null;
     final google = GoogleGateway(auth);
+    final cloud = cloudApi == null
+        ? null
+        : CloudSync(db, cloudApi, alarms, host);
     return AppServices._(
       db,
       auth,
-      SyncCoordinator(
-        db,
-        auth,
-        gateway ?? google,
-        gateway ?? google,
-        gateway ?? google,
-        alarms,
-      ),
+      cloud ??
+          SyncCoordinator(
+            db,
+            auth,
+            gateway ?? google,
+            gateway ?? google,
+            gateway ?? google,
+            alarms,
+          ),
       alarms,
       ReminderRepository(db),
       host,
       demo,
+      cloud,
     );
   }
   final AppDatabase db;
   final AccountRepository auth;
-  final SyncCoordinator sync;
+  final SyncEngine sync;
+  final CloudSync? cloud;
   final AlarmScheduler alarms;
   final ReminderRepository reminders;
   final NextbellHostApi host;
   final bool demo;
   late final Future<void> ready;
+  StreamSubscription<RemoteMessage>? _messages;
   Future<void> _initialize() async {
     if (demo) {
       await seedDemo(db);
       return;
     }
+    if (cloud != null) await db.health({'cloudRequired': true});
     try {
       await auth.restore();
     } catch (_) {
@@ -93,11 +109,20 @@ class AppServices {
       });
     }
     await sync.recoverInterruptedSync();
+    if (cloud != null && CloudConfig.configured) {
+      _messages = FirebaseMessaging.onMessage.listen((message) {
+        if (['sync', 'urgent_change'].contains(message.data['type'])) {
+          unawaited(sync.run());
+        }
+      });
+    }
   }
 
   Future<void> dispose() async {
     await ready;
+    await _messages?.cancel();
     await sync.waitForIdle();
+    if (cloud?.api case final CloudApi api) api.client.close();
     await db.close();
   }
 
@@ -106,12 +131,51 @@ class AppServices {
     await sync.runAfterCurrent();
   }
 
+  Future<void> enableTasks(String accountId) async {
+    if (auth is CloudAccountRepository) {
+      await (auth as CloudAccountRepository).connectGoogle(
+        accountId: accountId,
+        includeTasks: true,
+      );
+      await sync.runAfterCurrent();
+    }
+  }
+
+  Future<void> resetForCloud() async {
+    await db.transaction(() async {
+      await db.remove('cloudSession', 'main');
+      final device = await db.getOne('cloudDevice', 'main');
+      if (device != null) {
+        await db.put('cloudDevice', 'main', {
+          ...device,
+          'alarmsEnabled': false,
+        });
+      }
+      await db.health({'cloudSignedIn': false});
+    });
+    await sync.waitForIdle();
+    await host.cancelAlarms((await host.alarms()).map((a) => a.id).toList());
+    await host.configureCloudDevice(false, false);
+    for (final account in await host.accounts()) {
+      await host.removeAccount(account.id);
+    }
+    await db.delete(db.records).go();
+    await db.health({'cloudRequired': cloud != null, 'cloudSignedIn': false});
+  }
+
   Future<void> finishOnboarding() async {
     final state = await db.snapshot();
-    await reminders.saveSettings(state.settings.copyWith(onboarded: true));
+    await saveSettings(state.settings.copyWith(onboarded: true));
   }
 
   Future<void> setSourceMode(CalendarSource source, SourceMode mode) async {
+    if (cloud != null) {
+      if (mode == SourceMode.alarm) {
+        await db.deleteOwner(source.id, kind: 'entry');
+      }
+      await cloud!.edit('source', source.id, {'mode': mode.name});
+      return;
+    }
     final fresh = await db.getOne('source', source.id);
     if (fresh == null) return;
     final current = CalendarSource.fromJson(fresh);
@@ -139,6 +203,12 @@ class AppServices {
     CalendarSource source,
     List<int>? minutes,
   ) async {
+    if (cloud != null) {
+      await cloud!.edit('source', source.id, {
+        'reminderMinutes': minutes == null ? null : normalizeOffsets(minutes),
+      });
+      return;
+    }
     final current = CalendarSource.fromJson(
       (await db.getOne('source', source.id))!,
     );
@@ -161,6 +231,16 @@ class AppServices {
     String sourceId,
     List<int>? minutes,
   ) async {
+    if (cloud != null) {
+      await cloud!.edit(
+        'override',
+        id,
+        minutes == null
+            ? null
+            : {'sourceId': sourceId, 'minutes': normalizeOffsets(minutes)},
+      );
+      return;
+    }
     if (minutes == null) {
       await reminders.resetOverride(id);
     } else {
@@ -170,16 +250,45 @@ class AppServices {
   }
 
   Future<void> resetCalendar(CalendarSource source) async {
+    if (cloud != null) {
+      for (final rule in (await db.snapshot()).overrides.where(
+        (r) => r.sourceId == source.id,
+      )) {
+        await cloud!.edit('override', rule.id, null);
+      }
+      await setCalendarOffsets(source, null);
+      return;
+    }
     await reminders.resetSource(source.id);
     await setCalendarOffsets(source, null);
   }
 
   Future<void> saveSettings(AppSettings settings) async {
+    if (cloud != null) {
+      final old = (await db.snapshot()).settings.toJson();
+      final next = settings.toJson();
+      final patch = <String, dynamic>{};
+      for (final key in next.keys) {
+        if (next[key].toString() != old[key].toString()) patch[key] = next[key];
+      }
+      if (patch.isNotEmpty) await cloud!.edit('settings', 'main', patch);
+      return;
+    }
     await reminders.saveSettings(settings);
     await alarms.reconcile();
   }
 
   Future<void> resetAllReminders() async {
+    if (cloud != null) {
+      final state = await db.snapshot();
+      for (final source in state.sources) {
+        await resetCalendar(source);
+      }
+      await saveSettings(
+        state.settings.copyWith(minutes: [10, 5], snoozeMinutes: 5),
+      );
+      return;
+    }
     await db.transaction(() async {
       await db.deleteKind('override');
       final state = await db.snapshot();
@@ -199,6 +308,10 @@ class AppServices {
   }
 
   Future<void> selectTaskList(TaskListSource list, bool selected) async {
+    if (cloud != null) {
+      await cloud!.edit('taskList', list.id, {'selected': selected});
+      return;
+    }
     await db.put(
       'taskList',
       list.id,
@@ -221,6 +334,12 @@ class AppServices {
     if (at != null && !at.isAfter(DateTime.now())) {
       throw ArgumentError('Choose a future time.');
     }
+    if (cloud != null) {
+      await cloud!.edit('taskAlarm', item.id, {
+        'alarmAt': at?.toUtc().toIso8601String(),
+      });
+      return;
+    }
     final current = TaskItem.fromJson((await db.getOne('task', item.id))!);
     await db.put(
       'task',
@@ -232,6 +351,10 @@ class AppServices {
   }
 
   Future<void> completeTask(TaskItem item) async {
+    if (cloud != null) {
+      await cloud!.queueCompletion(item);
+      return;
+    }
     final stored = await db.getOne('task', item.id);
     if (stored == null) return;
     final current = TaskItem.fromJson(stored);
@@ -254,6 +377,23 @@ class AppServices {
       ...state.taskLists.where((s) => s.accountId == id).map((s) => s.id),
     };
     await db.transaction(() async {
+      if (cloud != null) {
+        final taskIds = state.tasks
+            .where((t) => ids.contains(t.listId))
+            .map((t) => t.id)
+            .toSet();
+        for (final op in await db.list('cloudOutbox')) {
+          final patch = (op['mutation'] as Json?)?['patch'] as Json?;
+          final target = patch?['targetId'];
+          final sourceId = (patch?['value'] as Json?)?['sourceId'];
+          if (ids.contains(target) ||
+              ids.contains(sourceId) ||
+              taskIds.contains(target) ||
+              taskIds.contains(op['taskId'])) {
+            await db.remove('cloudOutbox', op['id']);
+          }
+        }
+      }
       await db.remove('account', id);
       await db.deleteOwner(id);
       for (final source in ids) {
@@ -262,6 +402,7 @@ class AppServices {
     });
     await alarms.cancelSources(ids);
     await alarms.reconcile();
+    if (cloud != null) unawaited(sync.runAfterCurrent());
   }
 
   List<int> offsetsFor(AgendaEntry entry, AppSnapshot state) {

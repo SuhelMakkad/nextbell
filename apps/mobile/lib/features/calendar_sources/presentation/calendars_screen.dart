@@ -60,6 +60,15 @@ class CalendarsScreen extends ConsumerWidget {
                     trailing: PopupMenuButton<String>(
                       tooltip: 'Account options',
                       onSelected: (value) async {
+                        if (value == 'tasks') {
+                          await perform(
+                            context,
+                            () => ref
+                                .read(servicesProvider)
+                                .enableTasks(account.id),
+                          );
+                          return;
+                        }
                         if (value == 'reconnect') {
                           await perform(
                             context,
@@ -73,7 +82,7 @@ class CalendarsScreen extends ConsumerWidget {
                             await confirm(
                               context,
                               'Remove this account?',
-                              'Its downloaded events, tasks, settings, and alarms will be removed from this phone. Google content stays unchanged.',
+                              'Its Nextbell events, tasks, settings, and alarms will be removed. Other phones update when connected. Google content stays unchanged.',
                               action: 'Remove',
                             )) {
                           if (context.mounted) {
@@ -86,7 +95,12 @@ class CalendarsScreen extends ConsumerWidget {
                           }
                         }
                       },
-                      itemBuilder: (_) => const [
+                      itemBuilder: (_) => [
+                        if (ref.read(servicesProvider).cloud != null)
+                          const PopupMenuItem(
+                            value: 'tasks',
+                            child: Text('Enable Google Tasks'),
+                          ),
                         PopupMenuItem(
                           value: 'reconnect',
                           child: Text('Reconnect Google'),

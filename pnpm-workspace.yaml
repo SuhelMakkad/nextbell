@@ -1,6 +1,10 @@
 packages:
   - apps/*
+  - packages/*
 
 allowBuilds:
+  '@firebase/util': false
+  protobufjs: false
+  re2: true
   sharp: true
   unrs-resolver: true

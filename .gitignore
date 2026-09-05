@@ -68,3 +68,14 @@ out/
 playwright-report/
 test-results/
 .pnpm-store/
+
+# Private beta runtime and infrastructure state
+.firebase/
+cloud.local.json
+**/android/app/src/main/res/values/nextbell_firebase.xml
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.example.tfvars

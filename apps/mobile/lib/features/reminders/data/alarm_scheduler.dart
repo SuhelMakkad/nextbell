@@ -58,6 +58,14 @@ class NativeAlarmScheduler implements AlarmScheduler {
       await _ingestActions();
       await db.transaction(() async {
         final state = await db.snapshot();
+        if (!state.deviceAlarmsEnabled) {
+          await host.cancelAlarms(
+            (await host.alarms()).map((a) => a.id).toList(),
+          );
+          await db.deleteKind('alarm');
+          await db.health({'alarmError': null});
+          return;
+        }
         final handled = (await db.list('handled'))
             .map((r) => r['id'] as String)
             .toSet();

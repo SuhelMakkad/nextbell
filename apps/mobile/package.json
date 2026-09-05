@@ -7,6 +7,8 @@
     "check": "./tool/check.sh",
     "build:android:debug": "flutter build apk --debug",
     "build:android": "flutter build appbundle --release",
-    "build:ios": "flutter build ios --release --no-codesign --dart-define-from-file=config.local.json"
+    "build:ios": "flutter build ios --release --no-codesign --dart-define-from-file=config.local.json",
+    "dev:cloud": "dart run tool/configure_cloud.dart cloud.local.json && flutter run --dart-define-from-file=cloud.local.json",
+    "build:cloud:debug": "dart run tool/configure_cloud.dart cloud.local.json && flutter build apk --debug --dart-define-from-file=cloud.local.json"
   }
 }

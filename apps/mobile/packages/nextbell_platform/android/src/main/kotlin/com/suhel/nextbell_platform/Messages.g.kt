@@ -457,6 +457,9 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NextbellHostApi {
+  suspend fun identityToken(serverClientId: String): String
+  suspend fun authorizeCloud(serverClientId: String, email: String, includeTasks: Boolean): String
+  suspend fun configureCloudDevice(alarmsEnabled: Boolean, urgentNotices: Boolean)
   suspend fun connect(clientId: String, accountId: String?): NativeAccount
   suspend fun accounts(): List<NativeAccount>
   suspend fun accessToken(accountId: String): String
@@ -479,6 +482,67 @@ interface NextbellHostApi {
     @JvmOverloads
     fun setUp(binaryMessenger: BinaryMessenger, api: NextbellHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.identityToken$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val serverClientIdArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.identityToken(serverClientIdArg))
+              } catch (exception: Throwable) {
+                MessagesPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.authorizeCloud$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val serverClientIdArg = args[0] as String
+            val emailArg = args[1] as String
+            val includeTasksArg = args[2] as Boolean
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.authorizeCloud(serverClientIdArg, emailArg, includeTasksArg))
+              } catch (exception: Throwable) {
+                MessagesPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.configureCloudDevice$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val alarmsEnabledArg = args[0] as Boolean
+            val urgentNoticesArg = args[1] as Boolean
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                api.configureCloudDevice(alarmsEnabledArg, urgentNoticesArg)
+                listOf(null)
+              } catch (exception: Throwable) {
+                MessagesPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nextbell_platform.NextbellHostApi.connect$separatedMessageChannelSuffix", codec)
         if (api != null) {

@@ -1,7 +1,7 @@
 name: nextbell
 description: Thoughtful alarms for what comes next. Google Calendar and Tasks, on your terms.
 publish_to: none
-version: 1.0.0+1
+version: 1.0.0+2
 environment:
   sdk: '>=3.13.2 <4.0.0'
   flutter: '3.47.2'
@@ -24,6 +24,9 @@ dependencies:
   url_launcher: 6.3.2
   workmanager: 0.10.9
   cupertino_icons: 1.0.9
+  firebase_core: 4.14.0
+  firebase_auth: 6.6.1
+  firebase_messaging: 16.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

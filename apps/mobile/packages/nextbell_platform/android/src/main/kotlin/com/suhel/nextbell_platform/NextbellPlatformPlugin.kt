@@ -13,6 +13,11 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
@@ -59,8 +64,11 @@ class NextbellPlatformPlugin : FlutterPlugin, ActivityAware, NextbellHostApi,
         activityBinding?.removeActivityResultListener(this); activityBinding?.removeRequestPermissionsResultListener(this)
         activityBinding = null; activity = null
     }
-    private suspend fun authorize(account: Account?, interactive: Boolean, choose: Boolean = false): AuthorizationResult {
-        val builder = AuthorizationRequest.builder().setRequestedScopes(scopes.map(::Scope))
+    private suspend fun authorize(account: Account?, interactive: Boolean, choose: Boolean = false,
+        serverClientId: String? = null, includeTasks: Boolean = true): AuthorizationResult {
+        val requested = if (includeTasks) scopes else scopes.filterNot { it.endsWith("/tasks") }
+        val builder = AuthorizationRequest.builder().setRequestedScopes(requested.map(::Scope))
+        if (serverClientId != null) builder.requestOfflineAccess(serverClientId, true)
         if (account != null) builder.setAccount(account)
         if (choose) builder.setPrompt(AuthorizationRequest.Prompt.SELECT_ACCOUNT)
         val result = try { Identity.getAuthorizationClient(context).authorize(builder.build()).await() }
@@ -105,6 +113,28 @@ class NextbellPlatformPlugin : FlutterPlugin, ActivityAware, NextbellHostApi,
     }
     override suspend fun accounts(): List<NativeAccount> = prefs.all.values.mapNotNull {
         runCatching { val j = JSONObject(it as String); NativeAccount(j.getString("id"), j.getString("email"), j.getString("name")) }.getOrNull()
+    }
+    override suspend fun identityToken(serverClientId: String): String {
+        val host = activity ?: throw FlutterError("foreground", "Open Nextbell to sign in.")
+        try {
+            val option = GetSignInWithGoogleOption.Builder(serverClientId).build()
+            val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
+            val result = CredentialManager.create(host).getCredential(host, request)
+            val credential = result.credential
+            if (credential !is CustomCredential || credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                throw FlutterError("google_auth", "Choose your Google account.")
+            }
+            return GoogleIdTokenCredential.createFrom(credential.data).idToken
+        } catch (_: Exception) { throw FlutterError("google_auth", "Google sign-in did not finish. Please try again.") }
+    }
+    override suspend fun authorizeCloud(serverClientId: String, email: String, includeTasks: Boolean): String {
+        return authorize(Account(email, "com.google"), true, serverClientId = serverClientId,
+            includeTasks = includeTasks).serverAuthCode
+            ?: throw FlutterError("offline_access", "Allow ongoing Google access to connect this account.")
+    }
+    override suspend fun configureCloudDevice(alarmsEnabled: Boolean, urgentNotices: Boolean) {
+        context.getSharedPreferences("nextbell_cloud", Context.MODE_PRIVATE).edit()
+            .putBoolean("alarmsEnabled", alarmsEnabled).putBoolean("urgentNotices", urgentNotices).commit()
     }
     override suspend fun accessToken(accountId: String): String {
         val user = accounts().firstOrNull { it.id == accountId } ?: throw FlutterError("reauthorize", "Reconnect this account.")
