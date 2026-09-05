@@ -18,13 +18,13 @@ export const privacy: PolicyContent = {
   title: "Your plans stay personal.",
   description: "Privacy policy",
   summary:
-    "Your calendars and reminder settings live on your device. Nextbell has no advertising, analytics, or backend that collects your calendar and task data.",
+    "The Android private beta synchronizes selected Google data and reminder settings through Nextbell cloud. Downloaded alarms work on your phone. We do not include advertising or analytics.",
   sections: [
     {
       id: "who-we-are",
       title: "Who operates Nextbell",
       paragraphs: [
-        `Nextbell is a calendar and task reminder app operated by ${site.operator}. This policy covers the mobile app and nextbell.org. For privacy questions, contact ${site.email}. The app is currently in development and is not yet publicly available in app stores.`,
+        `Nextbell is a calendar and task reminder app operated by ${site.operator}. This policy covers the mobile app and nextbell.org. For privacy questions, contact ${site.email}. The app is in development and is not publicly available in app stores. These cloud practices apply to the Android private beta. Earlier development builds and the current iOS prototype use direct Google access on the device.`,
       ],
     },
     {
@@ -33,7 +33,7 @@ export const privacy: PolicyContent = {
       paragraphs: [
         "When you connect a Google account, Nextbell uses your account identity to keep each connection separate. With your permission, it reads your calendar list, calendar names, colors and access levels, and event details returned by Google, including titles, times, recurrence information, attendance status, locations and meeting links. It also reads your selected Google task lists and tasks, including their titles, dates and completion status.",
         "Shared and subscribed calendars use your existing Google permissions. The owner does not need to connect their account. Private event details are limited to what Google returns. Availability-only calendars expose anonymous busy periods rather than event titles or links.",
-        "Calendar access is read-only. Nextbell settings do not change Google events, visibility, subscriptions, sharing, or Google reminders. The Google Tasks permission allows task updates because completing a task in Nextbell sends its completion status to Google. Offline completions are queued on your device and marked pending until Google accepts them.",
+        "Calendar access is read-only. Nextbell settings do not change Google events, visibility, subscriptions, sharing, or Google reminders. The Google Tasks permission allows task updates because completing a task in Nextbell sends its completion status to Google. Offline completions are queued on your device, then processed by the backend and marked pending until Google accepts them.",
         "Nextbell uses Google data to display your plans, synchronize changes, and schedule the reminders you choose. Nextbell’s use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including its Limited Use requirements. Google data is not sold, used for advertising, or used to train generalized AI models.",
       ],
       links: [
@@ -49,10 +49,12 @@ export const privacy: PolicyContent = {
     },
     {
       id: "on-device",
-      title: "What stays on your device",
+      title: "Cloud sync and your phone",
       paragraphs: [
-        "Downloaded events, busy blocks and tasks, calendar selections, reminder defaults and overrides, task alarm times, handled alarms, queued completions and synchronization status are stored locally. No Nextbell backend receives this calendar or task content. Data remains until it is replaced during synchronization, removed when access is lost, or deleted by you. App storage is excluded from backups where configured by the platform.",
-        "Google credentials use native authorization storage on Android and secured, device-only Keychain storage on iOS. They are kept outside the app’s SQLite database and application logs. Google still receives the requests needed to authorize your account, refresh data and complete tasks.",
+        "Your primary Google identity is your Nextbell account. Connected account identities, selected calendar events and busy blocks, task lists and selected tasks, reminder settings, task alarm times, device names, push tokens and synchronization health are stored by Nextbell cloud to keep your phones up to date. We download seven past days and 90 future days of calendar occurrences. Successful refreshes replace cached data. Your phone also keeps a local copy, queued edits and native alarm schedules. Snooze and Dismiss remain specific to that phone. App storage is excluded from backups where configured by the platform.",
+        "Firebase Authentication manages Android beta sign-in. Google refresh tokens for ongoing calendar and task access are encrypted with Google Cloud KMS before storage; the server OAuth secret is held in Secret Manager. Credentials are excluded from SQLite and application logs. Native iOS prototype credentials stay in the device Keychain. Google receives authorization, refresh and task-completion requests.",
+        "The backend uses Google Cloud/Firebase for authentication, storage, jobs, encryption and push delivery, and Vercel for API hosting. Primary database, key, secret and worker regions are configured in Mumbai; authentication, push delivery, provider logs and support may be processed elsewhere. Push messages contain a revision and a generic change type, not meeting titles or Google credentials. We collect scheduling coverage and permission status to show whether each phone has applied changes.",
+        "Superseded snapshots and temporary refresh pages are removed by maintenance after 24 hours; retry and deduplication records expire within 7–30 days. Cloud backups and point-in-time recovery retain data for up to seven days. Account deletion removes active cloud data asynchronously. Minimal account-deletion markers remain to reject late requests and prevent deleted data returning. Backup copies expire with their retention period. No support staff access to Google content is permitted except as allowed by Google’s Limited Use policy and with the necessary user authorization.",
         "Scheduled alarms can work offline. On Android, scheduled alarm content is kept in device-protected app storage to restore future alarms after reboot. Alarm titles may appear on your lock screen. Your phone’s notification privacy settings control what others may see. Someone using your unlocked phone may be able to view downloaded plans.",
       ],
     },
@@ -60,7 +62,7 @@ export const privacy: PolicyContent = {
       id: "website-support",
       title: "Website visits and support",
       paragraphs: [
-        "This website does not offer account sign-in, analytics, advertising, tracking cookies, a waitlist, or a contact form. Fonts and artwork are bundled with the site. The website is prepared for Vercel hosting, with its domain managed through Cloudflare. Hosting and domain providers may process technical request information such as IP addresses, requested URLs, device or browser information and timestamps to deliver and protect their services. Their own policies govern that processing and retention.",
+        "This website does not offer account sign-in, analytics, advertising, tracking cookies, a waitlist, or a contact form. Fonts and artwork are bundled with the site. The website uses Vercel hosting, with its domain managed through Cloudflare. Hosting and domain providers may process technical request information such as IP addresses, requested URLs, device or browser information and timestamps to deliver and protect their services. Their own policies govern that processing and retention.",
         `If you email ${site.email}, your email address, message and any attachments are processed through the operator’s email provider, Gmail, to respond to your request. Correspondence is kept as needed to provide support and resolve the request; you can ask for its deletion. Please do not send passwords, authorization tokens or private event details.`,
         "Opening a meeting link, Google event link, email link or other external link takes you to another app or service with its own privacy practices.",
       ],
@@ -80,8 +82,8 @@ export const privacy: PolicyContent = {
       title: "Your choices and deletion",
       paragraphs: [
         "You can change connected accounts, selected calendars, task lists and reminder rules in Settings. Turning a calendar off cancels its pending alarms but keeps its custom preferences so you can use them again.",
-        "Remove an account in Settings → Accounts & calendars to delete its cached content, preferences, queued changes, stored authorization and pending alarms. This does not delete your Google account, events or tasks, and cannot undo completions already sent to Google. You can also revoke Nextbell’s access in your Google Account.",
-        "On iOS, remove connected accounts before uninstalling to clear their Keychain sessions; iOS can retain Keychain items across reinstalls. This website cannot remotely erase data held only on your device. Our removal guide explains the available steps.",
+        "Remove a connected Google account in Settings → Accounts & calendars to remove its content, preferences, queued changes and stored authorization from Nextbell. Local alarms are canceled immediately; cloud removal and changes on other phones require a connection. Use Settings → Devices & sync → Delete Nextbell account to delete the whole cloud account. Uninstalling alone does not delete cloud data. This does not delete your Google account, events or tasks, and cannot undo completions already sent to Google. You can also revoke Nextbell’s access in your Google Account.",
+        "Signing out of an Android beta phone unregisters it, clears local data and cancels its alarms while keeping your cloud account. Other offline phones apply removal when they reconnect; until then they may retain downloaded information and ring previously scheduled alarms. On iOS, remove connected accounts before uninstalling to clear their Keychain sessions; iOS can retain Keychain items across reinstalls. This website cannot remotely erase data held only on your device. Our removal guide explains the available steps.",
       ],
       links: [{ label: "How to remove your data", href: "/data-deletion" }],
     },
@@ -128,7 +130,7 @@ export const terms: PolicyContent = {
       id: "alarms",
       title: "Alarms have practical limits",
       paragraphs: [
-        "Alarm delivery depends on your permissions, device, operating system, audio settings, system limits and power restrictions. Background refresh is controlled by the operating system. Updates made elsewhere are reflected only after a successful refresh. Previously scheduled alarms can fire offline, but new or changed events cannot be downloaded without a connection.",
+        "Alarm delivery depends on your permissions, device, operating system, audio settings, system limits and power restrictions. Cloud sync uses Google change notifications and periodic refresh. Push delivery and phone background work are controlled by Google and the operating system and may be delayed or missed. Updates made elsewhere are reflected only after a successful refresh. Previously scheduled alarms can fire offline, but new or changed events cannot be downloaded without a connection.",
         "Check scheduling coverage and test alarms on your own device. Android force-stop can prevent alarms until you reopen the app. Nextbell does not guarantee that every reminder will be delivered and is not intended for emergency, medical or other safety-critical use. Use an appropriate backup for essential commitments.",
       ],
     },
@@ -163,7 +165,7 @@ export const deletion: PolicyContent = {
   title: "Your data. Your choice.",
   description: "Remove your data",
   summary:
-    "Nextbell stores your plans and preferences on your device. You can remove a connected account and its local data directly in the app.",
+    "Delete your Nextbell cloud account from the Android beta or request help by email. You can also remove individual connected Google accounts or clear just one phone.",
   sections: [
     {
       id: "remove-account",
@@ -174,8 +176,16 @@ export const deletion: PolicyContent = {
       steps: [
         "Open Nextbell → Settings → Accounts & calendars.",
         "Choose the connected account and select Remove account.",
-        "Confirm removal. Nextbell removes that account’s downloaded calendars, events, busy blocks and tasks, account preferences, reminder overrides, stored authorization, pending alarms and queued task completions.",
+        "Confirm removal. Nextbell cancels this phone’s alarms and queues removal of the account’s cloud content, preferences and Google authorization. Removal reaches the backend and other phones when they connect. Task completions already accepted by Google cannot be reversed.",
         "Review Settings for any unresolved cancellation error and retry if the operating system could not cancel an alarm.",
+      ],
+    },
+    {
+      id: "delete-cloud-account",
+      title: "Delete your entire Nextbell cloud account",
+      paragraphs: [
+        "Open Settings → Devices & sync → Delete Nextbell account. Confirm and sign in again with your primary Google account. This queues deletion of your connected Google data, credentials, devices and reminder preferences. Keep a connection until the request is accepted. Your Google account, events and tasks are not deleted.",
+        "Active cloud data is removed asynchronously. Reachable phones cancel schedules and clear local data on their next refresh. Offline phones may ring old alarms until they reconnect or you clear them locally. Superseded temporary copies are cleaned up after 24 hours; backups expire within seven days. Minimal deletion markers prevent late jobs from recreating data.",
       ],
     },
     {
@@ -203,7 +213,7 @@ export const deletion: PolicyContent = {
       id: "all-local-data",
       title: "4. Remove all local app data",
       paragraphs: [
-        "Remove every connected account first, then uninstall Nextbell. On Android, you can also clear Nextbell’s storage in your phone’s app settings to reset local app preferences. Menu names vary by device.",
+        "In the Android beta, use Settings → Devices & sync → Sign out of this phone while online to unregister the phone, cancel its alarms and clear its cache. Your cloud account remains. To remove cloud data too, choose Delete Nextbell account and confirm with Google before uninstalling. You can also clear Android app storage; that alone does not delete the cloud account. Menu names vary by device.",
         "On iOS, Keychain sessions can survive an uninstall. Remove connected accounts in Nextbell before uninstalling so these sessions are cleared. If you already uninstalled, reinstall the app and remove any restored accounts, then uninstall again. Google access can also be revoked using the link above.",
       ],
     },
@@ -212,7 +222,7 @@ export const deletion: PolicyContent = {
       title: "Need a hand?",
       paragraphs: [
         `Email ${site.email} for removal assistance or to request deletion of email support correspondence. Include the platform and app version, but no passwords, authorization tokens or private meeting details.`,
-        "There is no separate Nextbell web account or server copy of your calendar data to delete. This website and its operator cannot remotely erase device-only data or delete your Google account. If you no longer have your phone, use your device provider’s lost-device controls and revoke access in your Google Account.",
+        "To request deletion without the app, email us from your Nextbell sign-in address with the subject “Nextbell account deletion.” We verify control of that address before processing the cloud deletion and reply when it is complete. This website cannot remotely erase device-only data or delete your Google account. If you no longer have your phone, use your device provider’s lost-device controls and revoke access in your Google Account.",
       ],
       links: [
         {

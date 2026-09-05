@@ -55,6 +55,13 @@ public class NextbellPlatformPlugin: NSObject, FlutterPlugin, NextbellHostApi {
     public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         Self.handleURL(url)
     }
+    func identityToken(serverClientId: String) async throws -> String {
+        throw PigeonError(code: "cloud_android_beta", message: "Cloud sign-in is available in the Android beta first.", details: nil)
+    }
+    func authorizeCloud(serverClientId: String, email: String, includeTasks: Bool) async throws -> String {
+        throw PigeonError(code: "cloud_android_beta", message: "Cloud sign-in is available in the Android beta first.", details: nil)
+    }
+    func configureCloudDevice(alarmsEnabled: Bool, urgentNotices: Bool) async throws {}
     func connect(clientId: String, accountId: String?) async throws -> NativeAccount {
         guard !clientId.isEmpty else { throw PigeonError(code: "configuration", message: "Configure the iOS OAuth client first.", details: nil) }
         guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first(where: { $0.activationState == .foregroundActive }),

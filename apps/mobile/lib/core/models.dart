@@ -465,6 +465,9 @@ class AppSnapshot {
     this.backgroundError,
     this.lastSync,
     this.demo = false,
+    this.cloudRequired = false,
+    this.cloudSignedIn = false,
+    this.deviceAlarmsEnabled = true,
   });
   final List<ConnectedAccount> accounts;
   final List<CalendarSource> sources;
@@ -475,6 +478,7 @@ class AppSnapshot {
   final AppSettings settings;
   final List<AlarmSpec> alarms;
   final bool syncing, demo;
+  final bool cloudRequired, cloudSignedIn, deviceAlarmsEnabled;
   final String? syncError, alarmError, backgroundError;
   final DateTime? lastSync;
   CalendarSource? source(String id) =>

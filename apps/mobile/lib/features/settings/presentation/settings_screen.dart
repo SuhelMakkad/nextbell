@@ -45,6 +45,18 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         const SectionHeading('A rhythm that fits'),
+        if (ref.read(servicesProvider).cloud != null)
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.devices_rounded),
+              title: const Text('Devices & sync'),
+              subtitle: const Text(
+                'Cloud updates, offline changes, and alarm coverage',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => context.push('/devices'),
+            ),
+          ),
         Card(
           child: Column(
             children: [
@@ -383,15 +395,15 @@ class AboutScreen extends StatelessWidget {
         const BrandMark(),
         const SectionHeading('Your time is personal.'),
         const Text(
-          'Nextbell connects directly to Google to read the calendars and task lists you select. Completing a task updates it in Google. Calendar content, sharing, and Google reminder settings are never edited.',
+          'Nextbell reads the calendars and task lists you select using your Google permissions. The Android private beta synchronizes this data through Nextbell cloud; the iOS prototype connects directly to Google. Completing a task updates it in Google. Calendar content, sharing, and Google reminder settings are never edited.',
         ),
         const SectionHeading('On your phone'),
         const Text(
-          'Downloaded event and task details, calendar selections, and reminder settings are stored locally. Google authorization is handled by native Google services; iPhone credentials are kept in Keychain. No Nextbell backend, advertising, or analytics is included. Alarm titles may appear on your lock screen.',
+          'The Android beta stores selected Google data, reminder rules and device sync health in Nextbell cloud, with an offline copy on your phone. Server Google tokens are encrypted; sign-in uses Firebase Authentication. Snooze and Dismiss stay on this phone. The iOS prototype keeps credentials in Keychain. There are no ads or analytics. Alarm titles may appear on your lock screen.',
         ),
         const SectionHeading('You’re in control'),
         const Text(
-          'Remove a connected account in Settings to delete its local data and cancel its alarms. You can revoke Google access separately in your Google account. Demo data is temporary and never schedules real alarms.',
+          'Remove a connected account in Settings to remove its Nextbell data and cancel its alarms. In the Android beta, Devices & sync also provides sign-out and cloud account deletion. Other phones apply removal when they reconnect. You can revoke Google access separately in your Google account. Demo data is temporary and never schedules real alarms.',
         ),
         TextButton(
           onPressed: () => perform(

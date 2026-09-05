@@ -2,7 +2,10 @@
   "name": "nextbell",
   "private": true,
   "packageManager": "pnpm@11.25.0",
-  "engines": { "node": "24.x", "pnpm": "11.25.0" },
+  "engines": {
+    "node": "24.x",
+    "pnpm": "11.25.0"
+  },
   "scripts": {
     "dev": "pnpm --filter @nextbell/web dev",
     "build": "pnpm --filter @nextbell/web build",
@@ -15,6 +18,15 @@
     "build:android": "pnpm --filter @nextbell/mobile build:android",
     "build:android:debug": "pnpm --filter @nextbell/mobile build:android:debug",
     "build:ios": "pnpm --filter @nextbell/mobile build:ios",
-    "check": "pnpm check:web && pnpm check:mobile"
+    "check": "pnpm check:cloud && pnpm check:web && pnpm check:mobile",
+    "check:cloud": "pnpm --filter @nextbell/cloud check",
+    "test:cloud": "pnpm --filter @nextbell/cloud test",
+    "test:cloud:emulator": "firebase emulators:exec --only firestore,auth --project demo-nextbell \"pnpm --filter @nextbell/cloud test\"",
+    "contracts": "pnpm --filter @nextbell/cloud contracts",
+    "dev:mobile:cloud": "pnpm --filter @nextbell/mobile dev:cloud",
+    "build:android:cloud": "pnpm --filter @nextbell/mobile build:cloud:debug"
+  },
+  "devDependencies": {
+    "firebase-tools": "15.29.0"
   }
 }

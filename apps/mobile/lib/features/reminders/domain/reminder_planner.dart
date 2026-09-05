@@ -26,7 +26,7 @@ class ReminderPlanner {
     Set<String> handled = const {},
   }) {
     final planned = <String, AlarmSpec>{};
-    if (state.demo) return [];
+    if (state.demo || !state.deviceAlarmsEnabled) return [];
     for (final entry in state.entries) {
       final source = state.source(entry.sourceId);
       if (source == null ||

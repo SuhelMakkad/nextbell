@@ -1,0 +1,32 @@
+{
+  "name": "@nextbell/cloud",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:emulator": "vitest run test/firestore.integration.test.ts",
+    "contracts": "node --experimental-strip-types tool/openapi.ts"
+  },
+  "dependencies": {
+    "@google-cloud/kms": "6.0.0",
+    "@google-cloud/secret-manager": "7.0.0",
+    "@google-cloud/tasks": "7.0.0",
+    "@vercel/oidc": "3.8.5",
+    "firebase-admin": "14.3.0",
+    "google-auth-library": "10.5.0",
+    "google-cloud-auth": "npm:google-auth-library@11.0.2",
+    "googleapis": "178.0.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

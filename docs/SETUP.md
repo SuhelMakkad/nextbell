@@ -1,5 +1,7 @@
 # Development setup
 
+> Android cloud-beta setup now lives in [CLOUD_BETA.md](CLOUD_BETA.md). The direct-Google instructions below apply to the iOS prototype and earlier development builds. Preserve existing native OAuth registrations.
+
 The Flutter project is in `apps/mobile`; run Flutter and native commands below from that directory. Root pnpm wrappers are listed in README. Website setup is in [WEB.md](WEB.md).
 
 ## Tooling
@@ -23,7 +25,7 @@ This Mac now has testing OAuth configured in project `nextbell-507711` under `ma
 1. Create your own Google Cloud project; enable **Google Calendar API** and **Google Tasks API**.
 2. Configure an External OAuth consent screen. Add the developer identity, a controlled domain, public homepage, privacy policy and support details. While testing, add every test account.
 3. Request `openid`, `email`, `profile`, `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/tasks`. The Tasks scope enables completing tasks. There is no narrower completion-only Google scope; this app issues only a status patch.
-4. Create Android and iOS native OAuth clients. **Do not put a client secret in this app.** There is no token-exchange backend.
+4. Create Android and iOS native OAuth clients. **Do not put a client secret in this app.** The iOS prototype does not use the cloud token-exchange backend.
 5. Complete Google's sensitive-scope verification before a broad public release. Provide a consent/scope-use demonstration, domain verification and a justification for Calendar reading and Tasks completion. Test-mode sessions may expire; reconnect when prompted. Do not market a testing consent project as production-ready.
 
 References: [OAuth native apps](https://developers.google.com/identity/protocols/oauth2/native-app), [Calendar scopes](https://developers.google.com/workspace/calendar/api/auth), [Tasks authorization](https://developers.google.com/workspace/tasks/auth).

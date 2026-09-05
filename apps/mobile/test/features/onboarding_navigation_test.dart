@@ -43,6 +43,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Continue with Google'), findsOneWidget);
 
+    // Firebase sign-in can finish before the first Google source is connected.
+    snapshots.add(const AppSnapshot(cloudRequired: true, cloudSignedIn: true));
+    await tester.pumpAndSettle();
+    expect(
+      container.read(routerProvider).routeInformationProvider.value.uri.path,
+      '/today/calendars',
+    );
+    expect(find.text('Continue with Google'), findsNothing);
+    expect(tester.takeException(), isNull);
+
     // Google succeeds before the optional setup walkthrough is completed.
     snapshots.add(connected);
     await tester.pumpAndSettle();

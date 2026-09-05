@@ -412,6 +412,75 @@ class NextbellHostApi {
 
   final String pigeonVar_messageChannelSuffix;
 
+  Future<String> identityToken(String serverClientId) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nextbell_platform.NextbellHostApi.identityToken$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[serverClientId],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as String;
+  }
+
+  Future<String> authorizeCloud(
+    String serverClientId,
+    String email,
+    bool includeTasks,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nextbell_platform.NextbellHostApi.authorizeCloud$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[serverClientId, email, includeTasks],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as String;
+  }
+
+  Future<void> configureCloudDevice(
+    bool alarmsEnabled,
+    bool urgentNotices,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nextbell_platform.NextbellHostApi.configureCloudDevice$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[alarmsEnabled, urgentNotices],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
   Future<NativeAccount> connect(String clientId, String? accountId) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.nextbell_platform.NextbellHostApi.connect$pigeonVar_messageChannelSuffix';

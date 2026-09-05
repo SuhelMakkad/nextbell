@@ -97,3 +97,20 @@ Replaced Android’s default gray/all-capital buttons with Nextbell’s rounded 
 On the A001 phone, reviewed the actual lock-screen alarm, exercised both Snooze and Dismiss, and received the snoozed alarm. At system font scale 2.0 with animator duration scale 0, the title wrapped and both controls remained fully visible; Dismiss stopped the alarm. Restored font scale 1.0 and the original unset animator setting. No temporary test alarm remains.
 
 Four Android native tests, Android lint, debug APK and unsigned release APK builds pass. Lint reports existing plugin warnings; no warning originates from the new activity/resources. Lint caught an API-27-only navigation-bar attribute, which was removed from the minimum-API-26 theme; the AndroidX window controller handles navigation-bar appearance.
+
+
+## Android cloud foundation — September 5, 2026
+
+Validation for `feat/cloud-sync-foundation` is separate from the earlier direct-Google phone results. No hosted cloud-beta acceptance or 48-hour soak is claimed.
+
+- Root frozen pnpm installation, backend TypeScript, generated OpenAPI, and Next.js production build pass.
+- **30 backend tests pass with Firestore/Auth emulators**: source pagination, incremental snapshots/410 resets, canceled recurrence, FreeBusy limits/failure isolation, reminder precedence/UTC, forged webhook rejection, allowlist/identity rules, safe errors, tenant isolation, immutable snapshots, stale publisher/deletion fencing, preference conflicts, device versions, and task ETag replay protection.
+- **56 Flutter tests pass**, including seven cloud-cache/outbox tests for partial downloads, immediate offline cancellation, retained offline device choices, metadata/preferences, confirmed deletion, handled-state persistence and a late download after sign-out. Static analysis passes.
+- **7 Android native Robolectric tests pass at API 28**, including three quiet-notice checks. These do not establish physical FCM delivery, Doze wakeups, or high-priority eligibility.
+- Android debug APK and unsigned release AAB build with the new Firebase/Credential Manager dependencies and updated Gradle locks. These unconfigured validation artifacts are not the installable hosted-beta build; generate native Firebase resources and compile with `cloud.local.json` after hosted setup.
+- **26 Chromium/WebKit browser checks pass**, including every public route, metadata, navigation, email/deletion links, keyboard access, 320px reflow, enlarged text and reduced motion.
+- OpenTofu provider initialization and configuration validation pass. Infrastructure has **not** been planned against or applied to the live project. The provider versions are locked in `infra/cloud/.terraform.lock.hcl`.
+- The credential-pattern scan found no credentials in tracked/unignored files. Existing local OAuth config, new mobile Firebase resources, cloud config, Terraform variables/state and server environment files remain ignored.
+- Local iOS build exits with **“Application not configured for iOS.”** The Xcode project exists, but `xcode-select -p` points to `/Library/Developer/CommandLineTools`; a full configured Xcode toolchain is unavailable. Native iOS cloud methods return the existing `PigeonError` type, and cloud sign-in remains Android only. iOS CI validation is retained; no local iOS compilation is claimed.
+
+Pending hosted gates: separate billing account linkage, Firebase/server OAuth setup, Vercel WIF and beta deployment, valid live authentication/webhook/job probes, configured APK installation, two-device tests, account deletion/restore exercises, cost measurement, and the 48-hour soak. See [CLOUD_BETA.md](CLOUD_BETA.md).

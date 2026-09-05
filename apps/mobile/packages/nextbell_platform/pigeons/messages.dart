@@ -66,6 +66,12 @@ class NativeAlarmAction {
 @HostApi()
 abstract class NextbellHostApi {
   @async
+  String identityToken(String serverClientId);
+  @async
+  String authorizeCloud(String serverClientId, String email, bool includeTasks);
+  @async
+  void configureCloudDevice(bool alarmsEnabled, bool urgentNotices);
+  @async
   NativeAccount connect(String clientId, String? accountId);
   @async
   List<NativeAccount> accounts();

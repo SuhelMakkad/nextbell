@@ -1,5 +1,7 @@
 # Release preparation
 
+> Android cloud beta: complete [CLOUD_BETA.md](CLOUD_BETA.md) before using this checklist. Data Safety and OAuth disclosures now include Firebase identity, backend Google data, device health and deletion. Existing direct-Google physical tests do not satisfy the cloud release gate.
+
 ## Working name needs clearance
 
 A public search on 2026-09-05 found an existing [NextBell timer PWA](https://nextbell.app/) and a business at [nextbell.com](https://www.nextbell.com/). This is a concrete naming overlap; **Nextbell branding availability is not confirmed**. Public store searches did not establish name reservation or trademark clearance. Keep this as the working project name until the release owner clears it or chooses another name. Do not use those existing domains as this project's privacy/support URLs.

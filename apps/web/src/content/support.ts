@@ -6,6 +6,15 @@ export type HelpTopic = {
 
 export const helpTopics: readonly HelpTopic[] = [
   {
+    id: "cloud-beta",
+    question: "How does the Android cloud beta work?",
+    answer: [
+      "Sign in with your primary Google account to create your Nextbell identity, then connect the Google accounts that supply your calendars. Google Tasks access is optional: choose Enable Google Tasks from the account menu. Cloud sync is required for the Android beta; the iOS prototype continues to use device-only connections.",
+      "Each phone rings by default. Settings → Devices & sync lets you switch alarms off per phone, inspect actual scheduling coverage and resolve edits that conflict with another phone. A remote switch takes effect when that phone receives and applies it. Snooze and Dismiss affect only the phone you use. A pending label means a change has not finished syncing.",
+      "Quiet upcoming-meeting notices can alert you when an event with an alarm in the next hour moves or is canceled. These notices do not replace the alarm. Push can be delayed, so review the phone’s last refresh and first uncovered reminder. Expired Google authorization needs reconnection; Google test-mode authorization can expire after seven days.",
+    ],
+  },
+  {
     id: "setup",
     question: "How do I get started?",
     answer: [
@@ -59,7 +68,7 @@ export const helpTopics: readonly HelpTopic[] = [
     question: "Will alarms work without an internet connection?",
     answer: [
       "Already scheduled alarms can fire offline. Changes made to events elsewhere need a successful refresh before Nextbell knows about them. Open the app regularly, especially after important calendar changes.",
-      "Nextbell refreshes on launch or resume, on manual refresh and every five minutes while active. Background refresh is requested at 15-minute intervals, but the operating system controls when it runs. Last-sync status and actual scheduling coverage are available in Settings.",
+      "In the Android beta, the backend watches selected calendars for changes and polls as a fallback; tasks and availability blocks are polled. Nextbell requests a refresh on launch or resume, on manual refresh and every five minutes while active. Background refresh is requested at 15-minute intervals, but the operating system controls when it runs. Last-sync status and actual scheduling coverage are available in Settings.",
     ],
   },
   {

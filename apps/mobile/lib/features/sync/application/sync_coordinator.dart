@@ -5,8 +5,9 @@ import '../../../core/models.dart';
 import '../../../core/data/app_database.dart';
 import '../../../core/data/repositories.dart';
 import '../../reminders/data/alarm_scheduler.dart';
+import 'sync_engine.dart';
 
-class SyncCoordinator {
+class SyncCoordinator implements SyncEngine {
   SyncCoordinator(
     this.db,
     this.auth,
@@ -27,7 +28,9 @@ class SyncCoordinator {
   final DateTime Function() clock;
   final int processId;
   Future<void>? _running;
+  @override
   Future<void> run() => _running ??= _run().whenComplete(() => _running = null);
+  @override
   Future<void> waitForIdle() async {
     await _running;
   }
@@ -39,6 +42,7 @@ class SyncCoordinator {
       lease?['processId'] == processId &&
       (date(lease?['expires'])?.isAfter(clock()) ?? false);
 
+  @override
   Future<void> recoverInterruptedSync() => db.transaction(() async {
     if (!_leaseIsLive(await db.getOne('lease', 'sync'))) {
       await db.remove('lease', 'sync');
@@ -47,6 +51,7 @@ class SyncCoordinator {
   });
 
   // Settings may change after an existing pass has read its source selection.
+  @override
   Future<void> runAfterCurrent() async {
     await _running;
     await run();

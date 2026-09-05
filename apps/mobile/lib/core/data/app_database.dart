@@ -123,6 +123,10 @@ class AppDatabase extends _$AppDatabase {
       backgroundError: health['backgroundError'],
       lastSync: date(health['lastSync']),
       demo: health['demo'] ?? false,
+      cloudRequired: health['cloudRequired'] ?? false,
+      cloudSignedIn: health['cloudSignedIn'] ?? false,
+      deviceAlarmsEnabled:
+          byKind['cloudDevice']?.firstOrNull?['alarmsEnabled'] ?? true,
     );
   }
 
