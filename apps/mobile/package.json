@@ -1,0 +1,12 @@
+{
+  "name": "@nextbell/mobile",
+  "private": true,
+  "scripts": {
+    "dev": "flutter run --dart-define-from-file=config.local.json",
+    "demo": "flutter run --dart-define=NEXTBELL_DEMO=true",
+    "check": "./tool/check.sh",
+    "build:android:debug": "flutter build apk --debug",
+    "build:android": "flutter build appbundle --release",
+    "build:ios": "flutter build ios --release --no-codesign --dart-define-from-file=config.local.json"
+  }
+}

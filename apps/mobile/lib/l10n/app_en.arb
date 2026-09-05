@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "appName": "Nextbell",
+  "today": "Today",
+  "tasks": "Tasks",
+  "settings": "Settings",
+  "agendaHeadline": "A little ahead.",
+  "agendaSubtitle": "Your day, on your terms.",
+  "tasksHeadline": "Small things.\nMore headspace.",
+  "settingsHeadline": "Make it yours.",
+  "accountsAndCalendars": "Accounts & Calendars",
+  "alarmsAndReminders": "Alarms & reminders",
+  "snooze": "Snooze",
+  "dismiss": "Dismiss"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "nextbell",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": "24.x", "pnpm": "11.25.0" },
+  "scripts": {
+    "dev": "pnpm --filter @nextbell/web dev",
+    "build": "pnpm --filter @nextbell/web build",
+    "start": "pnpm --filter @nextbell/web start",
+    "check:web": "pnpm --filter @nextbell/web check",
+    "test:web": "pnpm --filter @nextbell/web test:e2e",
+    "dev:mobile": "pnpm --filter @nextbell/mobile dev",
+    "demo:mobile": "pnpm --filter @nextbell/mobile demo",
+    "check:mobile": "pnpm --filter @nextbell/mobile check",
+    "build:android": "pnpm --filter @nextbell/mobile build:android",
+    "build:android:debug": "pnpm --filter @nextbell/mobile build:android:debug",
+    "build:ios": "pnpm --filter @nextbell/mobile build:ios",
+    "check": "pnpm check:web && pnpm check:mobile"
+  }
+}

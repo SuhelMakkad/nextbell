@@ -1,0 +1,13 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  exclude:
+    - '**/*.g.dart'
+    - '**/messages.g.dart'
+    - packages/nextbell_platform/example/**
+    - build/**
+    - android/**
+    - ios/**
+linter:
+  rules:
+    avoid_print: true
+    unawaited_futures: true
