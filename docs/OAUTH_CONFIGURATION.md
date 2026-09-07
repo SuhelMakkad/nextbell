@@ -12,7 +12,7 @@ Updated in Google Cloud Console on 2026-09-07 using `makadsuhel11@gmail.com`.
 - Audience: **External / In production**.
 - Branding: verified and published; `nextbell.org` domain ownership verified in Search Console.
 - Homepage: https://www.nextbell.org/; privacy: https://www.nextbell.org/privacy; terms: https://www.nextbell.org/terms.
-- Calendar/Tasks sensitive scopes remain unverified; the console displays a 100-user lifetime cap for unapproved sensitive scopes.
+- Calendar/Tasks sensitive scopes were submitted on 7 September 2026 and are **under review**. Approval is pending; the 100-user lifetime cap for unapproved sensitive scopes still applies.
 - Scopes: `openid`, `https://www.googleapis.com/auth/userinfo.email`, `https://www.googleapis.com/auth/userinfo.profile`, `https://www.googleapis.com/auth/calendar.readonly`, `https://www.googleapis.com/auth/tasks`.
 
 The console displays the canonical identity scope URLs; the Android SDK requests their `email` and `profile` aliases. Tasks access allows more operations than completion, but Nextbell only patches task completion status. Calendar data remains read-only.
@@ -29,7 +29,7 @@ SHA-1: AB:F3:C1:E8:6B:E1:29:3A:A2:DE:5B:0F:AE:FE:8B:AB:A0:29:47:96
 
 The fingerprint was checked against both this Mac's debug keystore and the delivered `Nextbell-development.apk` using `apksigner verify --print-certs`. The existing APK matches this registration; rebuilding is unnecessary for this console change. The Android AuthorizationClient resolves registration from package and certificate; no client ID or secret is embedded for Android.
 
-**iOS — Nextbell iOS**
+**Retired iOS registration — Nextbell iOS**
 
 ```text
 Client ID: 483596257075-737r108t0g9dbc4128fiv3gin5iva5ul.apps.googleusercontent.com
@@ -37,11 +37,11 @@ Bundle ID: com.suhel.nextbell
 URL scheme: com.googleusercontent.apps.483596257075-737r108t0g9dbc4128fiv3gin5iva5ul
 ```
 
-App Store ID and Apple Team ID are unset because distribution has not been configured.
+The owner explicitly approved removing this unused client for the Android-only release on 7 September 2026. It is deleted and cannot authorize requests. The identifiers above are a historical record, not active configuration. Before future iOS testing, create a new iOS registration and update the local client ID and callback scheme together, then provide the required iOS verification evidence. App Store ID and Apple Team ID were never configured.
 
 ## Local app configuration
 
-The real iOS client ID is saved in `apps/mobile/config.local.json` and `apps/mobile/ios/Flutter/OAuth.xcconfig`. Both files are ignored by Git. Their client IDs and reversed URL scheme were checked against each other and the existing Info.plist references. No client secret was downloaded or embedded.
+The local files `apps/mobile/config.local.json` and `apps/mobile/ios/Flutter/OAuth.xcconfig` remain ignored by Git. They still contain the now-retired iOS client ID and callback scheme; replace both before attempting iOS sign-in. The Android release does not use that client ID. No client secret was downloaded or embedded.
 
 ```sh
 cd /Users/suhel/code/me/apps/mobile
@@ -52,7 +52,7 @@ On Android, AuthorizationClient resolves each native OAuth registration from the
 
 ## Android release clients
 
-All registrations use package `com.suhel.nextbell`. Public certificate fingerprints are not secrets. The original debug and iOS clients above remain unchanged.
+All registrations use package `com.suhel.nextbell`. Public certificate fingerprints are not secrets. The original debug client remains unchanged. The unused iOS client was deleted with the owner’s explicit approval, as recorded above.
 
 | Registration | SHA-1 | Client ID |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ Play selected its quantum-ready signing configuration. The three Play certificat
 
 Branding and domain ownership passed. The Calendar/Tasks scope justification and [unlisted Android demonstration](https://youtu.be/-zGvuykleL8) are saved in Google Auth Platform. The video shows Google consent, selected calendars, event reminders, task reading and completion, native alarm permissions, a locked-emulator alarm, Snooze, and Dismiss. It has no audio track. Android authorization and task completion were tested with a dedicated reviewer account on the upload-signed APK.
 
-Sensitive-scope verification is **not submitted**. The scope form asks for video coverage of all OAuth clients assigned to the project, while the final questionnaire requires an attestation that all requirements are met. The retained iOS client is unreleased and has not been demonstrated; the existing Xcode setup blocker remains. The final attestation was left unchecked. Resolve the missing client coverage before submitting, without claiming iOS validation or removing the original registration. The Android-only review context is prepared in the additional-info field; that field may need to be re-entered if the browser draft expires.
+Sensitive-scope verification was submitted on 7 September 2026. Google Auth Platform confirms **Your app’s data access is under review**. The unused iOS client was removed with the owner’s explicit approval before submission, resolving the missing-client demonstration issue. All five active clients are Android registrations for the same package and consent implementation; their signing variants are explained in the submission. No approval is implied until Google completes its review. The existing local Xcode blocker remains a future iOS release concern.
 
 All Android client registrations refer to the same package and consent implementation; their certificates distinguish debug, upload-signed, and Play-signed installations. No web OAuth client, backend, or new Google scopes were added.
 

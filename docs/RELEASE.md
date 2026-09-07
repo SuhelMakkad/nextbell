@@ -52,7 +52,7 @@ Primary references: [Android exact alarms](https://developer.android.com/develop
 - [ ] Resolve working-name overlap, package/bundle IDs and ownership.
 - [x] Configure testing Google Cloud clients, consent, local Android debug fingerprint and the initial Gmail tester. See `OAUTH_CONFIGURATION.md`.
 - [x] Register Android upload and Play signing fingerprints.
-- [ ] Complete public OAuth sensitive-scope verification; branding is verified and the Android video is ready, but the existing iOS client lacks demonstration coverage.
+- [ ] Receive public OAuth sensitive-scope approval; Android verification is submitted and under review, and branding is verified.
 - [x] Publish operator-owned HTTPS homepage/privacy/support URLs and contact details; link these from store metadata.
 - [ ] Finish Xcode setup; resolve/commit SwiftPM lockfile; compile and run native iOS tests.
 - [x] Configure Android upload signing and Play App Signing.
@@ -63,4 +63,4 @@ Primary references: [Android exact alarms](https://developer.android.com/develop
 - [ ] Complete closed-test distribution, 12 testers for 14 days, feedback, and production-access review.
 - [ ] Verify release artifacts and remove any test-only consent configuration. Publish only after these gates pass.
 
-Project `nextbell-507711` now has External / In production OAuth audience and verified, published branding. Native release signing clients are registered. The Android demonstration and sensitive-scope justification are saved; final OAuth submission remains pending the all-client video requirement. No paid service or enhanced cloud deployment was created for the Android release.
+Project `nextbell-507711` now has External / In production OAuth audience and verified, published branding. Native release signing clients are registered. The Android demonstration and sensitive-scope justification were submitted after the owner approved deleting the unused iOS client. Data access is under review; all Android clients remain active. No paid service or enhanced cloud deployment was created for the Android release.
