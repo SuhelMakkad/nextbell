@@ -12,9 +12,11 @@ The Android bundle is built from `main` commit `680ca1ea1f629d4d95483348bc57b419
 - Internal release published on 7 September 2026. Play displays a temporary package-based name until review is complete. This is not public production availability.
 - Play reports a typical 10.5 MB download; the upload bundle contains all supported ABIs.
 
-## Closed test submitted for review
+## Closed test published
 
 On 7 September 2026, Play Console confirmed **Changes in review** for the Alpha closed track, using the same version 1 bundle from the Play library. The release is named **1.0.0 — Device-only Android**. All 176 available countries/regions plus the rest of the world are selected. Managed publishing is off, so the closed release can become available after approval; this does not publish a production release.
+
+Later on 7 September, Play confirmed the update was published, with Alpha serving this release and no unpublished changes. The opt-in page displays Nextbell and a working Play installation link for the owner's eligible account. The public website now promotes the closed test and explains the invited-account requirement.
 
 - [Closed-test opt-in](https://play.google.com/apps/testing/com.suhel.nextbell), usable by eligible testers after approval.
 - The initial selected email list contains only the owner's account. Additional testers' Google-account addresses have not yet been supplied. No invitations were sent.
@@ -65,11 +67,11 @@ The widget preview harness can also produce draft 9:16 renders with `CAPTURE_PRE
 
 ## Remaining external gates
 
-1. Wait for Play's closed-test review and address any findings. Supply real tester addresses and obtain at least 12 opted-in testers for 14 continuous days after the track becomes accessible.
+1. Supply real tester addresses and obtain at least 12 opted-in testers for 14 continuous days on the approved closed track. Play's release dashboard also flags edge-to-edge behavior for investigation in the next release; inspect insets on affected devices during beta testing.
 2. Wait for Google sensitive-scope verification and respond to review findings. The [Android review video](https://youtu.be/-zGvuykleL8) and justification were submitted on 7 September 2026; Google Auth Platform confirms data access is **under review**. The owner authorized deletion of the unused iOS client so this submission covers Android only. All Android registrations remain active. Future iOS work needs a new registration and matching local configuration before sign-in or verification. Branding and domain ownership are already verified.
 3. Verify the Play-installed build on a physical device, including Google sign-in, locked/offline ringing, reboot, permission revocation, and force-stop behavior. Preserve the user's existing local data when planning installation; the connected phone's debug app was not uninstalled.
 4. Apply for production access and complete Google's reviews before adding a public store download link to the website.
 
-The website remains coming soon. No cloud backend deployment, cloud testing, paid infrastructure, or public Android production rollout is part of this release.
+The website links to the approved Android closed test. No cloud backend deployment, cloud testing, paid infrastructure, or public Android production rollout is part of this release.
 
 References: [Google's closed-testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465), [reviewer app access](https://support.google.com/googleplay/android-developer/answer/9859455), [OAuth verification requirements](https://support.google.com/cloud/answer/13464321).

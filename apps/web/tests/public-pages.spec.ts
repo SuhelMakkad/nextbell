@@ -83,9 +83,15 @@ for (const route of pages) {
     ).toHaveAttribute("href", "mailto:makadsuhel11@gmail.com");
     await expect(
       page.locator(
-        'a[href*="apps.apple.com"], a[href*="play.google.com"], a[href*="dashboard"], a[href*="login"], a[href*="sign-in"], form',
+        'a[href*="apps.apple.com"], a[href*="play.google.com/store/apps"], a[href*="dashboard"], a[href*="login"], a[href*="sign-in"], form',
       ),
     ).toHaveCount(0);
+    await expect(
+      page.getByRole("banner").getByRole("link", { name: "Join Android test" }),
+    ).toHaveAttribute(
+      "href",
+      "https://play.google.com/apps/testing/com.suhel.nextbell",
+    );
     await expectNoOverflow(page);
     const scan = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
@@ -125,11 +131,41 @@ test("navigation, email support and data removal are reachable", async ({
   page,
 }) => {
   await page.goto("/");
+  await expect(page.getByText(/coming soon/i)).toHaveCount(0);
+  await expect(
+    page.getByText("Invited Google accounts", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Request test access", exact: true }),
+  ).toHaveAttribute(
+    "href",
+    "mailto:makadsuhel11@gmail.com?subject=Nextbell%20Android%20test%20access",
+  );
+  for (const link of await page
+    .getByRole("link", { name: "Join Android test" })
+    .all()) {
+    await expect(link).toHaveAttribute(
+      "href",
+      "https://play.google.com/apps/testing/com.suhel.nextbell",
+    );
+  }
   await page
     .getByRole("navigation", { name: "Main navigation" })
     .getByRole("link", { name: "Support", exact: true })
     .click();
   await expect(page).toHaveURL(/\/support$/);
+  await page.locator("#android-test summary").click();
+  await expect(page.locator("#android-test")).toContainText(
+    "before the invite link will work",
+  );
+  await expect(
+    page
+      .locator("#android-test")
+      .getByRole("link", { name: "Join Android test" }),
+  ).toHaveAttribute(
+    "href",
+    "https://play.google.com/apps/testing/com.suhel.nextbell",
+  );
   await expect(
     page.getByRole("link", { name: "Email support" }),
   ).toHaveAttribute(

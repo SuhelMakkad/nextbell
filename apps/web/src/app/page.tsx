@@ -3,9 +3,9 @@ import { features } from "@/content/home";
 import Link from "next/link";
 import { Icon } from "@/components/icon";
 import { ReminderDemo } from "@/components/reminder-demo";
-import { StoreLinks } from "@/components/site-shell";
+import { AndroidTestLink, StoreLinks } from "@/components/site-shell";
 import { homeStructuredData } from "@/content/structured-data";
-import { pageMetadata, site } from "@/content/site";
+import { androidTest, pageMetadata, site } from "@/content/site";
 
 export const metadata = pageMetadata(
   "Google Calendar Alarms & Meeting Reminders",
@@ -48,16 +48,18 @@ export default function Home() {
             kind of heads-up.
           </p>
           <div className="hero-actions">
-            <a className="button primary" href="#features">
-              Meet your next reminder
-              <Icon name="arrow" />
-            </a>
+            <AndroidTestLink />
             <span className="availability-note">
-              Coming soon
+              Closed test · Android 8+
               <br />
-              <strong>Android first · iOS planned</strong>
+              <strong>Invited Google accounts</strong>
             </span>
           </div>
+          <p className="test-access-note">
+            Need an invite?{" "}
+            <a href={androidTest.requestAccessHref}>Request test access</a> with
+            your Google Play email address.
+          </p>
           <div className="hero-trust">
             <span>
               <Icon name="check" />
@@ -324,28 +326,32 @@ export default function Home() {
       <section id="availability" className="container availability-section">
         <div className="availability-card">
           <span className="launch-badge">
-            <span className="status-dot" />A good thing on its way
+            <span className="status-dot" />
+            Android closed test
           </span>
           <h2>
             A little more present.
             <br />
-            Coming soon.
+            Try it with us.
           </h2>
           <p>
-            We’re getting Nextbell ready for your everyday.
+            Help shape Nextbell around your everyday.
             <br />
-            Android 8+ is coming first, with iOS planned. Free, with no ads or
-            subscriptions.
+            Join the closed test for Android 8+. Free, with no ads or
+            subscriptions. iOS is planned.
           </p>
           <div className="launch-actions">
             <StoreLinks />
-            <Link href="/support" className="button light">
-              Get to know Nextbell
-              <Icon name="arrow" />
-            </Link>
+            <AndroidTestLink className="button light" />
           </div>
           <p className="launch-footnote">
-            App store links will appear here when we’re ready.
+            Already invited? Open the link with your invited Google account.
+            <br />
+            Need access?{" "}
+            <a href={androidTest.requestAccessHref}>
+              Email your Google Play address
+            </a>{" "}
+            to be added to the tester list.
           </p>
           <Icon name="bell" className="launch-bell" />
         </div>

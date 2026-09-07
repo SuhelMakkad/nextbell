@@ -105,7 +105,7 @@ export const terms: PolicyContent = {
       id: "using-nextbell",
       title: "Using Nextbell",
       paragraphs: [
-        `Nextbell is provided by ${site.operator}. These terms apply to the Nextbell mobile app and nextbell.org. By using them, you agree to these terms. The mobile app is currently coming soon; no public store availability is implied by this website.`,
+        `Nextbell is provided by ${site.operator}. These terms apply to the Nextbell mobile app and nextbell.org. By using them, you agree to these terms. The Android app is available through a closed test for invited Google accounts. This is not a public production release; iOS is planned.`,
         "Use Nextbell lawfully and only with accounts and calendars you are authorized to access. You are responsible for the accounts you connect, your reminder choices, and keeping your device and Google account secure. Do not misuse the service or interfere with its operation.",
       ],
     },

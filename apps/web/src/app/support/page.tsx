@@ -59,6 +59,14 @@ export default function Support() {
                 {topic.answer.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
+                {topic.links?.map((link) => (
+                  <p key={link.href}>
+                    <a className="text-link" href={link.href}>
+                      {link.label}
+                      <Icon name="arrow" />
+                    </a>
+                  </p>
+                ))}
               </div>
             </details>
           ))}
