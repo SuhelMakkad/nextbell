@@ -52,4 +52,10 @@ The project is ready to accept future dashboard routes without switching deploym
 
 ## SEO release changes
 
-Descriptive Android calendar-alarm metadata, canonical URLs matching the live www host, WebSite/MobileApplication structured data, image sitemap entries, descriptive image alternatives, and AVIF/WebP negotiation improve discoverability without inventing ratings or public availability. Store links stay hidden until a public listing exists. The existing production sitemap was submitted in Search Console; on 7 September 2026 it reported **Success**, with five pages discovered. This does not establish indexing or ranking. The enhanced sitemap and metadata in this branch take effect after its PR is merged and deployed.
+Descriptive Android calendar-alarm metadata, canonical URLs matching the live www host, WebSite/MobileApplication structured data, image sitemap entries, descriptive image alternatives, and AVIF/WebP negotiation improve discoverability without inventing ratings or public availability. These changes were deployed after PR #2 merged. The existing production sitemap was submitted in Search Console; on 7 September 2026 it reported **Success**, with five pages discovered. This does not establish indexing or ranking.
+
+## Android test invitation
+
+Google Play approved the closed Alpha release on 7 September 2026. The header, homepage and support page use the centrally configured `androidTest` invitation at https://play.google.com/apps/testing/com.suhel.nextbell. This is a closed-test opt-in link, separate from `storeListings`, which remains empty until production is public.
+
+Visitors must be added to the Google Play tester list before the invitation works. The page labels that requirement and provides a mailto link for requesting access with their Google Play email address. It does not enroll anyone automatically, send email, collect addresses on the website, or create a waitlist/backend. Support, terms, and the social preview describe the Android closed test; iOS remains planned. When production launches, update these availability messages and configure the real store links together.

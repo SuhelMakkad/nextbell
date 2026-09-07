@@ -289,6 +289,16 @@ img {
   font-weight: 700;
   color: #383c51;
 }
+.test-access-note {
+  margin-top: 16px;
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+.test-access-note a,
+.launch-footnote a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .hero-trust {
   display: flex;
   gap: 24px;

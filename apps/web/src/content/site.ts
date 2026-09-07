@@ -15,6 +15,12 @@ type StoreListing = { label: string; href: `https://${string}` };
 // Add only real, published store listings. An empty list keeps download links hidden.
 export const storeListings: readonly StoreListing[] = [];
 
+export const androidTest = {
+  href: "https://play.google.com/apps/testing/com.suhel.nextbell",
+  label: "Join Android test",
+  requestAccessHref: `mailto:${site.email}?subject=${encodeURIComponent("Nextbell Android test access")}`,
+} as const;
+
 export const publicPages = [
   { href: "/", label: "Home" },
   { href: "/privacy", label: "Privacy" },

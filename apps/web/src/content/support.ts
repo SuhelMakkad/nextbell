@@ -1,16 +1,31 @@
+import { androidTest } from "./site";
+
 export type HelpTopic = {
   id: string;
   question: string;
   answer: readonly string[];
+  links?: readonly { label: string; href: string }[];
 };
 
 export const helpTopics: readonly HelpTopic[] = [
   {
+    id: "android-test",
+    question: "How do I join the Android test?",
+    answer: [
+      "Nextbell’s closed test is available for Android 8+ with Google Play services. Access is limited to invited Google accounts. Request access by emailing the Google-account address you use in Google Play; you must be added to the tester list before the invite link will work.",
+      "Once invited, open the test link using that same Google account, opt in, and follow the Google Play installation link. If you see an unavailable message, check which Google account is selected. iOS is planned and is not included in this test.",
+    ],
+    links: [
+      { label: androidTest.label, href: androidTest.href },
+      { label: "Request test access", href: androidTest.requestAccessHref },
+    ],
+  },
+  {
     id: "setup",
     question: "How do I get started?",
     answer: [
-      "When the app is available, connect your Google account, choose which calendars to show, then enable alarms for the calendars you want to hear. Nextbell suggests your primary calendar. Additional and newly discovered calendars stay off until you choose them.",
-      "Allow the alarm permissions requested by your phone and test an alarm. You can add more Google accounts and change any choice later in Settings → Accounts & calendars. The app is coming soon for Android 8+ and iOS 26+.",
+      "After installing from the Android test, connect your Google account, choose which calendars to show, then enable alarms for the calendars you want to hear. Nextbell suggests your primary calendar. Additional and newly discovered calendars stay off until you choose them.",
+      "Allow the alarm permissions requested by your phone and test an alarm. You can add more Google accounts and change any choice later in Settings → Accounts & calendars. The sample-data tour does not schedule real alarms.",
     ],
   },
   {

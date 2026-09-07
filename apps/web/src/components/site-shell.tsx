@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { publicPages, site, storeListings } from "@/content/site";
+import { androidTest, publicPages, site, storeListings } from "@/content/site";
 import { Icon } from "./icon";
 
 export function Brand() {
@@ -20,11 +20,21 @@ export function Header() {
       <nav aria-label="Main navigation">
         <Link href="/#features">The little details</Link>
         <Link href="/support">Support</Link>
-        <Link className="header-cta" href="/#availability">
-          Coming soon <Icon name="arrow" />
-        </Link>
+        <AndroidTestLink className="header-cta" />
       </nav>
     </header>
+  );
+}
+export function AndroidTestLink({
+  className = "button primary",
+}: {
+  className?: string;
+}) {
+  return (
+    <a className={className} href={androidTest.href}>
+      {androidTest.label}
+      <Icon name="arrow" />
+    </a>
   );
 }
 export function StoreLinks() {
