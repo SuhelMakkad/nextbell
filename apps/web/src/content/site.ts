@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 
 export const site = {
   name: "Nextbell",
-  origin: "https://nextbell.org",
+  origin: "https://www.nextbell.org",
   operator: "Suhel Makkad",
   email: "makadsuhel11@gmail.com",
   description:
-    "A little ahead. A lot more present. Nextbell turns your Google Calendar plans into customizable alarms, with Google Tasks and shared calendars in one calm app.",
-  reviewedOn: "September 5, 2026",
+    "Set custom alarms for Google Calendar meetings and Google Tasks. Bring shared calendars together, choose reminder times, and stay on time when you travel.",
+  updatedAt: "2026-09-07",
+  reviewedOn: "September 7, 2026",
 } as const;
 
 type StoreListing = { label: string; href: `https://${string}` };
@@ -42,7 +43,7 @@ export function pageMetadata(
           url: "/opengraph-image",
           width: 1200,
           height: 630,
-          alt: "Nextbell. A little ahead. A lot more present.",
+          alt: "Nextbell calendar alarms for Android: Google Calendar, Tasks and shared calendars.",
         },
       ],
     },

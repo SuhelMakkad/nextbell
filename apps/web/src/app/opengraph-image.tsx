@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const alt =
-  "Nextbell. A little ahead. A lot more present. Coming soon for Android and iOS.";
+  "Nextbell. A little ahead. A lot more present. Calendar alarms for Android. iOS planned.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -67,7 +67,7 @@ export default async function OpenGraphImage() {
             color: "#5856ce",
           }}
         >
-          Coming soon · Android & iOS · nextbell.org
+          Android coming soon · nextbell.org
         </div>
       </div>
       <div

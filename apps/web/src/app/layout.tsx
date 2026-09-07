@@ -11,7 +11,10 @@ const manrope = localFont({
 });
 export const metadata: Metadata = {
   metadataBase: new URL(site.origin),
-  title: { default: "Nextbell — A little ahead", template: "%s · Nextbell" },
+  title: {
+    default: "Nextbell — Calendar Alarms & Meeting Reminders",
+    template: "%s · Nextbell",
+  },
   description: site.description,
   applicationName: site.name,
   robots:
