@@ -28,7 +28,9 @@ void main() {
   testWidgets(
     'agenda, task and settings navigation renders; reminder sheet is usable',
     (tester) async {
-      tester.view.physicalSize = const Size(430, 932);
+      tester.view.physicalSize = const bool.fromEnvironment('STORE_PREVIEWS')
+          ? const Size(432, 768)
+          : const Size(430, 932);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -125,7 +127,9 @@ void main() {
     await tester.runAsync(service.dispose);
   });
   testWidgets('dark agenda and shared-source settings render', (tester) async {
-    tester.view.physicalSize = const Size(430, 932);
+    tester.view.physicalSize = const bool.fromEnvironment('STORE_PREVIEWS')
+        ? const Size(432, 768)
+        : const Size(430, 932);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -176,9 +180,15 @@ Future<void> capture(WidgetTester tester, GlobalKey key, String name) async {
   final boundary =
       key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   await tester.runAsync(() async {
-    final image = await boundary.toImage(pixelRatio: 2);
+    final image = await boundary.toImage(
+      pixelRatio: const bool.fromEnvironment('STORE_PREVIEWS') ? 2.5 : 2,
+    );
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final directory = Directory('build/previews');
+    final directory = Directory(
+      const bool.fromEnvironment('STORE_PREVIEWS')
+          ? 'build/store-screens'
+          : 'build/previews',
+    );
     await directory.create(recursive: true);
     await File('${directory.path}/$name.png')
         .writeAsBytes(bytes!.buffer.asUint8List());

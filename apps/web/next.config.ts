@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return process.env.VERCEL_ENV === "preview"
       ? [

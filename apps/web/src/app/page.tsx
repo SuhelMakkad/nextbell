@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Icon } from "@/components/icon";
 import { ReminderDemo } from "@/components/reminder-demo";
 import { StoreLinks } from "@/components/site-shell";
+import { homeStructuredData } from "@/content/structured-data";
 import { pageMetadata, site } from "@/content/site";
 
 export const metadata = pageMetadata(
-  "A little ahead. A lot more present.",
+  "Google Calendar Alarms & Meeting Reminders",
   site.description,
   "/",
 );
@@ -15,11 +16,17 @@ export const metadata = pageMetadata(
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(homeStructuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="hero container">
         <div className="hero-copy entrance">
           <p className="eyebrow">
             <span className="status-dot" />
-            For all the things you don’t want to miss
+            Google Calendar alarms for Android
           </p>
           <h1>
             A little ahead.
@@ -48,7 +55,7 @@ export default function Home() {
             <span className="availability-note">
               Coming soon
               <br />
-              <strong>Android & iOS</strong>
+              <strong>Android first · iOS planned</strong>
             </span>
           </div>
           <div className="hero-trust">
@@ -327,7 +334,8 @@ export default function Home() {
           <p>
             We’re getting Nextbell ready for your everyday.
             <br />
-            Free for Android 8+ and iOS 26+. No ads, no subscriptions.
+            Android 8+ is coming first, with iOS planned. Free, with no ads or
+            subscriptions.
           </p>
           <div className="launch-actions">
             <StoreLinks />

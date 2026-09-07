@@ -5,7 +5,7 @@ const pages = [
   {
     path: "/",
     heading: "A little ahead. A lot more present.",
-    title: "A little ahead.",
+    title: "Google Calendar Alarms & Meeting Reminders",
   },
   {
     path: "/privacy",
@@ -51,7 +51,7 @@ for (const route of pages) {
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      `https://nextbell.org${route.path === "/" ? "" : route.path}`,
+      `https://www.nextbell.org${route.path === "/" ? "" : route.path}`,
     );
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       "content",
@@ -59,11 +59,11 @@ for (const route of pages) {
     );
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
       "content",
-      `https://nextbell.org${route.path === "/" ? "" : route.path}`,
+      `https://www.nextbell.org${route.path === "/" ? "" : route.path}`,
     );
     await expect(
       page.locator('meta[property="og:image"]').first(),
-    ).toHaveAttribute("content", /https:\/\/nextbell.org\/opengraph-image/);
+    ).toHaveAttribute("content", /https:\/\/www.nextbell.org\/opengraph-image/);
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
       "summary_large_image",
@@ -225,13 +225,13 @@ test("404, sitemap, robots, social image and bundled media work", async ({
   await expect(page).toHaveURL(/\/$/);
   const robots = await request.get("/robots.txt");
   expect(await robots.text()).toContain(
-    "Sitemap: https://nextbell.org/sitemap.xml",
+    "Sitemap: https://www.nextbell.org/sitemap.xml",
   );
   const sitemap = await request.get("/sitemap.xml");
   const sitemapText = await sitemap.text();
   for (const route of pages)
     expect(sitemapText).toContain(
-      `https://nextbell.org${route.path === "/" ? "" : route.path}</loc>`,
+      `https://www.nextbell.org${route.path === "/" ? "" : route.path}</loc>`,
     );
   const social = await request.get("/opengraph-image");
   expect(social.ok()).toBe(true);
